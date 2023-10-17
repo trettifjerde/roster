@@ -1,0 +1,65 @@
+@use '/src/styles/variables' as *;
+
+.squad {
+    color: $light;
+    border-radius: 7px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.header {
+    background-color: $primary-color;
+    display: flex;
+    align-items: center;
+    padding: $gap-def $gap-m;
+    gap: $gap-def;
+    transition: background-color .2s ease-in-out;
+    cursor: pointer;
+
+    h3 {
+        font-weight: 500;
+        display: inline-block;
+        flex-grow: 1;
+        text-align: left;
+    }
+
+    &::after {
+        content: 'v';
+    }
+
+    @media (pointer: fine) {
+        &:hover {
+            background-color: $pale;
+        }
+    }
+}
+
+.body {
+    background-color: $secondary-color;
+    height: 0px;
+    overflow: auto;
+}
+
+.inner {
+    padding-inline: $gap-l;
+    padding-bottom: $gap-m;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    text-align: center;
+
+    > div:nth-child(odd) {
+        border-right: 1px solid $primary-color;
+    }
+
+    div {
+        padding-block: $gap-def;
+    }
+}
+
+.info {
+    font-size: 0.85em;
+    color: $pale;
+    border-bottom: 1px solid $primary-color;
+}

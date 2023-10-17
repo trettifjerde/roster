@@ -1,0 +1,22 @@
+$primary-color: rgb(89, 73, 84);
+$secondary-color: rgb(74, 64, 71);
+$dark: rgb(43, 43, 43);
+$light: rgb(235, 235, 235);
+$pale: rgb(117, 99, 112);
+
+$breakpoint-s: 450px;
+$breakpoint-m: 768px;
+$breakpoint-l: 1024px;
+$breakpoint-xl: 1400px;
+$breakpoint-xxl: 1700px;
+
+$gap-def: 0.5rem;
+$gap-m: 1rem;
+$gap-l: 2rem;
+$gap-xxl: 1vw;
+
+@mixin res-min($breakpoint) {
+    @media (min-width: $breakpoint) {
+        @content;
+    }
+}

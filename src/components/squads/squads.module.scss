@@ -1,0 +1,34 @@
+@use '/src/styles/variables' as *;
+
+.squads {
+    margin: $gap-def;
+
+    @include res-min($breakpoint-m) {
+        margin-block: $gap-m;
+        margin-inline: 5vh;
+    }
+
+    @include res-min($breakpoint-l) {
+        margin-block: $gap-l;
+        margin-inline: 5vw;
+    }
+
+    @include res-min($breakpoint-xl) {
+        margin-inline: 10vw;
+    }
+
+    @include res-min($breakpoint-xxl) {
+        margin-inline: 15vw;
+    }
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(auto, 300px));
+    justify-content: center;
+    gap: $gap-def;
+
+    @include res-min($breakpoint-m) {
+        gap: $gap-m;
+    }
+}
