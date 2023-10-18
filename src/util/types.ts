@@ -1,7 +1,7 @@
-import { Squad } from './classes';
-
-export type Squads = {[key: string]: Squad};
+export type Squad = {id: number, tag: string, slots: number, with: Set<number>, without: Set<number>};
+export type Squads = Map<number, Squad>;
 export type TagIdMap = Map<string|number, number|string>;
+
 export type SideInfo = {slots: number, squads: string[], happiness: number};
 export type Rotation = [Side, Side, Side, Side];
 export type Roster = [[SideInfo, SideInfo], [SideInfo, SideInfo]];

@@ -32,3 +32,20 @@
         gap: $gap-m;
     }
 }
+
+.new {
+
+    form {
+        background-color: $secondary-color;
+        color: white;
+        padding: $gap-m;
+        border-radius: 5px;
+    }
+    
+    &>* {
+        margin-block: $gap-m;
+        display: block;
+        margin-inline: auto;
+        text-align: center;
+    }
+}

@@ -1,11 +1,11 @@
 @use '/src/styles/variables' as *;
 
 .squad {
-    color: $light;
-    border-radius: 7px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    color: $light;
+    border-radius: 7px;
 }
 
 .header {
@@ -43,10 +43,15 @@
 
 .inner {
     padding-inline: $gap-l;
-    padding-bottom: $gap-m;
+    text-align: center;    
+    height: 100%;
+}
+
+.info {
+    height: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr auto;
     text-align: center;
 
     > div:nth-child(odd) {
@@ -56,9 +61,14 @@
     div {
         padding-block: $gap-def;
     }
+
+    button {
+        grid-column: 1/3;
+        margin-block: $gap-m;
+    }
 }
 
-.info {
+.note {
     font-size: 0.85em;
     color: $pale;
     border-bottom: 1px solid $primary-color;

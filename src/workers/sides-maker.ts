@@ -1,4 +1,4 @@
-import { Squad } from "../util/classes";
+import { Squad } from "../util/squadMaker";
 import { SidesMakerRequest, Side, Squads, TagIdMap, SideMakerMemo } from "../util/types";
 
 type MakerInfo = {

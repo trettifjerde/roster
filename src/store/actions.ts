@@ -1,16 +1,22 @@
-import { SquadInfo } from "../util/squads-info";
+import { Squad } from "../util/types";
 
 export const ADD_SQUAD = 'ADD_SQUAD';
 export const DELETE_SQUAD = 'DELETE_SQUAD';
+export const UPDATE_SQUAD = 'UPDATE_SQUAD';
 
 export class AddSquad {
     public readonly type = ADD_SQUAD;
-    constructor(public info: SquadInfo) {}
+    constructor(public info: Squad) {}
 };
 
 export class DeleteSquad {
     public readonly type = DELETE_SQUAD;
-    constructor(public tag: string) {}
+    constructor(public id: number) {}
 }
 
-export type Action = AddSquad | DeleteSquad;
+export class UpdateSquad {
+    public readonly type = UPDATE_SQUAD;
+    constructor(public info: Squad) {}
+}
+
+export type Action = AddSquad | UpdateSquad | DeleteSquad;

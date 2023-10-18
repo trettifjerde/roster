@@ -1,0 +1,12 @@
+@use '/src/styles/variables' as *;
+
+.btn {
+    background-color: $primary-color;
+    color: white;
+
+    @media (pointer: fine) {
+        &:hover {
+            background-color: $pale;
+        }        
+    }
+}
