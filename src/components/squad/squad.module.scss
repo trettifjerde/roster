@@ -1,50 +1,7 @@
 @use '/src/styles/variables' as *;
 
 .squad {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    color: $light;
-    border-radius: 7px;
-}
-
-.header {
-    background-color: $primary-color;
-    display: flex;
-    align-items: center;
-    padding: $gap-def $gap-m;
-    gap: $gap-def;
-    transition: background-color .2s ease-in-out;
-    cursor: pointer;
-
-    h3 {
-        font-weight: 500;
-        display: inline-block;
-        flex-grow: 1;
-        text-align: left;
-    }
-
-    &::after {
-        content: 'v';
-    }
-
-    @media (pointer: fine) {
-        &:hover {
-            background-color: $pale;
-        }
-    }
-}
-
-.body {
     background-color: $secondary-color;
-    height: 0px;
-    overflow: auto;
-}
-
-.inner {
-    padding-inline: $gap-l;
-    text-align: center;    
-    height: 100%;
 }
 
 .info {

@@ -1,0 +1,23 @@
+@use '/src/styles/variables' as *;
+
+.cont {
+    margin: $gap-def;
+
+    @include res-min($breakpoint-m) {
+        margin-block: $gap-m;
+        margin-inline: 5vh;
+    }
+
+    @include res-min($breakpoint-l) {
+        margin-block: $gap-l;
+        margin-inline: 5vw;
+    }
+
+    @include res-min($breakpoint-xl) {
+        margin-inline: 10vw;
+    }
+
+    @include res-min($breakpoint-xxl) {
+        margin-inline: 15vw;
+    }
+}

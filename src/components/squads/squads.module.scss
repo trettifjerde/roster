@@ -1,30 +1,24 @@
 @use '/src/styles/variables' as *;
 
-.squads {
-    margin: $gap-def;
+.cont {
+    border: 1px solid $secondary-color;
+    border-radius: 0 0 $border-radius $border-radius;
+}
 
-    @include res-min($breakpoint-m) {
-        margin-block: $gap-m;
-        margin-inline: 5vh;
-    }
-
-    @include res-min($breakpoint-l) {
-        margin-block: $gap-l;
-        margin-inline: 5vw;
-    }
-
-    @include res-min($breakpoint-xl) {
-        margin-inline: 10vw;
-    }
-
-    @include res-min($breakpoint-xxl) {
-        margin-inline: 15vw;
+.header {
+    display: flex;
+    align-items: center;
+    gap: $gap-def;
+    
+    span {
+        flex-grow: 1;
+        text-align: end;
     }
 }
 
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(auto, 300px));
+    grid-template-columns: repeat(auto-fill, minmax(auto, 280px));
     justify-content: center;
     gap: $gap-def;
 
@@ -40,6 +34,10 @@
         color: white;
         padding: $gap-m;
         border-radius: 5px;
+    }
+
+    button {
+        margin-inline: $gap-def;
     }
     
     &>* {

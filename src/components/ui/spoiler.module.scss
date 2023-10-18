@@ -1,0 +1,45 @@
+@use '/src/styles/variables' as *;
+
+.spoiler {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    color: $light;
+    border-radius: $border-radius;
+}
+
+.header {
+    background-color: $primary-color;
+    padding: $gap-def $gap-m;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: background-color .2s ease-in-out;
+    cursor: pointer;
+
+    > :first-child {
+        flex-grow: 1;
+    }
+
+    &::after {
+        content: 'v';
+        margin-inline: $gap-def;
+    }
+
+    @media (pointer: fine) {
+        &:hover {
+            background-color: $pale;
+        }
+    }
+}
+
+.body {
+    height: 0px;
+    overflow: auto;
+}
+
+.inner {
+    padding: $gap-m $gap-l;
+    text-align: center;    
+    height: 100%;
+}

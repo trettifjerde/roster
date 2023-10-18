@@ -1,11 +1,12 @@
 import SquadGrid from './components/squads/squads';
+import styles from './App.module.scss';
 
 
 function App() {    
   
-  return (<>
+  return (<div className={styles.cont}>
     <SquadGrid />
-  </>
+  </div>
   )
 }
 
