@@ -1,0 +1,7 @@
+@use '/src/styles/variables' as *;
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(auto, 400px));
+    gap: $gap-m;
+}

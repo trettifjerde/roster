@@ -1,0 +1,21 @@
+@use '/src/styles/variables' as *;
+
+.prefs {
+    margin-block: $gap-m;
+}
+
+.checkboxes {
+    background-color: $pale;
+    padding: $gap-def 5px;
+    border-radius: 5px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(auto, 100px));
+    justify-content: center;
+}
+
+.chbxcont {
+    font-size: 0.8rem;
+    input {
+        margin-inline: 4px;
+    }
+}

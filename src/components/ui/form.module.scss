@@ -1,0 +1,63 @@
+@use '../../styles/variables' as *;
+
+.form {
+    width: fit-content;
+    color: white;
+    text-align: center;
+
+    label {
+        line-height: 2;
+    }
+
+    button {
+        margin: $gap-def;
+    }
+
+    input {
+        background-color: $pale;
+        color: white;
+    }
+}
+
+.err {
+    line-height: 1.2rem;
+    height: 1.2rem;
+    margin-block: $gap-def;
+    font-size: 0.85rem;
+    color: $red;
+    text-align: center;
+}
+
+.cont {
+    display: grid;
+    grid-template-columns: 1fr 5fr;
+    align-items: center;
+    gap: $gap-m;
+    margin-block: $gap-def;
+
+    input {
+        width: 100%;
+    }
+}
+
+.btncont {
+    margin-top: $gap-m;
+}
+
+.lblcont {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $gap-def;
+
+    label {
+        margin-right: $gap-def;
+    }
+
+    input {
+        max-width: 5rem;
+    }
+}
+
+.invalid {
+    border: 1px solid $red;
+}

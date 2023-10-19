@@ -1,0 +1,13 @@
+@use '/src/styles/variables' as *;
+
+.pane {
+    width: fit-content;
+    margin-inline: auto;
+    margin-block: $gap-l;
+}
+
+.form {
+    padding: $gap-m;
+    border-radius: $border-radius;
+    border: 1px solid $secondary-color;
+}

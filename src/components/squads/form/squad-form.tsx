@@ -1,10 +1,11 @@
 import { FormEventHandler, MouseEventHandler, useCallback, useContext, useState } from 'react';
-import { StateContext } from '../../store/context';
-import styles from './form.module.scss';
-import Button from '../ui/button';
-import { AddSquad, DeleteSquad, UpdateSquad } from '../../store/actions';
-import { Squad } from '../../util/types';
 import {motion} from 'framer-motion';
+import { AddSquad, DeleteSquad, UpdateSquad } from '../../../store/actions';
+import { StateContext } from '../../../store/context';
+import { Squad } from '../../../util/types';
+import Button from '../../ui/button';
+import styles from './form.module.scss';
+import formStyles from '../../ui/form.module.scss';
 
 export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleForm: MouseEventHandler}) {
     const {state, dispatch} = useContext(StateContext);
@@ -55,26 +56,26 @@ export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleFor
 
     return <motion.form layout 
         initial={{opacity: 0, y: 100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -100}}
-            className={styles.form} onSubmit={blockSubmit} onClickCapture={clearError}>
-        <p className={styles.err}>{error}</p>
-        <div className={styles.cont}>
+            className={formStyles.form} onSubmit={blockSubmit} onClickCapture={clearError}>
+        <p className={formStyles.err}>{error}</p>
+        <div className={formStyles.cont}>
             <label>Tag</label>
             <input name="tag" type='text' defaultValue={squad ? squad.tag : ''} />
         </div>
-        <div className={styles.cont}>
+        <div className={formStyles.cont}>
             <label>Slots</label>
             <input name="slots" type='number' min={0} defaultValue={squad ? squad.slots : 0}/>
         </div>
 
         {squad && !deleteMode && <Button onClick={toggleDeleteSquad}>Delete squad</Button>}
-        {squad && deleteMode && <div className={styles.btncont}>
+        {squad && deleteMode && <div className={formStyles.btncont}>
             <div>Delete squad?</div>
             <Button onClick={deleteSquad}>Yes</Button>
             <Button onClick={toggleDeleteSquad}>Cancel</Button>
         </div>}
 
         <SquadPrefsForm squad={squad} squads={state.squads}/>
-        <div className={styles.btncont}>
+        <div className={formStyles.btncont}>
             <Button onClick={validateForm}>Save</Button>
             <Button onClick={toggleForm}>Cancel</Button>
         </div>

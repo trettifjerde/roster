@@ -1,5 +1,5 @@
 import { SquadInfo } from "./squads-info";
-import { Squad } from "./types";
+import { Roster, Rotation, SideInfo, Squad } from "./types";
 
 let nextSquadId = 1;
 
@@ -34,4 +34,22 @@ export function makeSquadFromForm(info: Squad) {
         without: info.without
 
     } as Squad;
+}
+
+export function getSquadIdsFromMask(mask: bigint) {
+    const ids: number[] = [];
+
+    let squadFlags = mask;
+    let otherSquadId = 1;
+
+    while (squadFlags > 0) {
+
+        if (squadFlags & BigInt(0x1)) {
+            ids.push(otherSquadId);           
+        }
+
+        otherSquadId *= 2;
+        squadFlags >>= BigInt(1);
+    }
+    return ids;
 }

@@ -1,4 +1,4 @@
-import { makeSquadFromForm, makeSquadFromSquadInfo } from "../util/squadMaker"
+import { makeSquadFromForm, makeSquadFromSquadInfo } from "../util/helpers"
 import { SQUADS_INFO } from "../util/squads-info"
 import { Squad, TagIdMap } from "../util/types"
 import * as a from "./actions"
@@ -31,6 +31,7 @@ export function initStateMaker() {
     }
 
     sortSquads(squads);
+    console.log(squads);
 
     return {squads, tagIdMap} as State;
 }

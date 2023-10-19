@@ -4,6 +4,15 @@
     background-color: $secondary-color;
 }
 
+.header {
+    display: flex;
+    align-items: center;
+    span {
+        flex-grow: 1;
+        text-align: end;
+    }
+}
+
 .info {
     height: 100%;
     display: grid;

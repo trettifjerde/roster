@@ -1,9 +1,12 @@
-import { PossibleRotations, RosterSlaveRequest, RosterSlaveResponse, Side } from "../util/types";
+import { RosterSlaveRequest, RosterSlaveResponse, Rotation, Side } from "../util/types";
 
 let sides: Side[];
 let allSquads: bigint;
 let limit: number;
 let slaveIndex: number;
+
+type RotationSideIndexes = number[];
+type Rotations = RotationSideIndexes[];
 
 self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
     switch (data.command) {
@@ -24,8 +27,8 @@ self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
 
 function startCombining() {
     combineSides(allSquads, sides.map((s, i) => i));
-    console.log('Slave done');
-    self.postMessage({status: 'done', slaveIndex} as RosterSlaveResponse);
+    console.log('Slave', slaveIndex, 'done');
+    self.postMessage({status: 'done'} as RosterSlaveResponse);
     self.close();
 }
 
@@ -34,12 +37,12 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
     if (level < 0) {
         
         if (remainingSquads === BigInt(0))
-            return [[]] as PossibleRotations;
+            return [[]] as Rotations;
         else
-            return [] as PossibleRotations;
+            return [] as Rotations;
     }
 
-    const rotations : PossibleRotations = [];
+    const rotations : Rotations = [];
 
     let roundCounter = (level === 3) ? limit : compIndexes.length;
 
@@ -49,7 +52,7 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
         const remSq = remainingSquads ^ side.squads;
         const remInd = compIndexes.filter(i => (remSq & sides[i].squads) === sides[i].squads);
 
-        const rots = combineSides(remSq, remInd, level - 1).map(rot => ([...rot, index]));
+        const rots = combineSides(remSq, remInd, level - 1).map(rot => ([...rot, index] as RotationSideIndexes));
 
         if (level === 3) 
             rots.forEach(rot => announceRotation(rot));
@@ -63,21 +66,15 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
     return rotations;
 }
 
-function announceRotation(indexes: number[]) {
-    let str = 'Roster\n';
-    for (const i of indexes) {
-        const side = sides[i];
-        str += `slots: ${side.slots} squads: ${side.squads}\n`;
-    }
-    console.log(str);
+function announceRotation(indexes: RotationSideIndexes) {
+    const rotation = getRotation(indexes);
+    self.postMessage({status: 'update', rotation} as RosterSlaveResponse);
 }
 
-function allSquadsPresent(indexes: number[]) {
-    const total = indexes.reduce((acc, i) => acc | sides[i].squads, BigInt(0));
-    return total === allSquads;
-
+function getRotation(rot: RotationSideIndexes) {
+    return [getSide(rot[0]), getSide(rot[1]), getSide(rot[2]), getSide(rot[3])] as Rotation;
 }
 
-function makeHash(index: number, remainingSquads: bigint) {
-    return `${index}-${remainingSquads}`;
+function getSide(i: number) {
+    return sides[i];
 }

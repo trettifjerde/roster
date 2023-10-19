@@ -1,11 +1,11 @@
 import { useCallback, useContext, useState } from "react";
-import SquadComponent from '../squad/squad';
-import styles from './squads.module.scss';
-import { StateContext } from "../../store/context";
 import { AnimatePresence, motion } from "framer-motion";
-import SquadForm from "../squad-form/squad-form";
-import Button from "../ui/button";
-import Spoiler from "../ui/spoiler";
+import SquadComponent from '../squad/squad-item';
+import { StateContext } from "../../../store/context";
+import SquadForm from "../form/squad-form";
+import Button from "../../ui/button";
+import Spoiler from "../../ui/spoiler";
+import styles from './grid.module.scss';
 
 export default function SquadGrid() {
 

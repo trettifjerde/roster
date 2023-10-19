@@ -1,27 +1,25 @@
-import { Ref, forwardRef, memo, useCallback, useEffect, useMemo, useState } from "react";
-import styles from './squad.module.scss';
+import { Ref, forwardRef, memo, useCallback, useMemo, useState } from "react";
 import {AnimatePresence, motion} from 'framer-motion';
-import Button from "../ui/button";
-import SquadForm from "../squad-form/squad-form";
-import { Squad, TagIdMap } from "../../util/types";
-import Spoiler from "../ui/spoiler";
+import { Squad, TagIdMap } from "../../../util/types";
+import SquadForm from "../form/squad-form";
+import Spoiler from "../../ui/spoiler";
+import Button from "../../ui/button";
+import styles from './squad.module.scss';
 
 
 function SquadComponent({squad, tagIdMap, forceCollapse}: {squad: Squad, tagIdMap: TagIdMap, forceCollapse: boolean}, ref: Ref<HTMLDivElement>|null) {
-    console.log(squad.tag);
     const [editMode, setEditMode] = useState(false);
 
     const toggleMode = useCallback(() => setEditMode(prev => !prev), [setEditMode]);
     
     const getHeader = useCallback(() => {
-        return <>
+        return <div className={styles.header}>
             <h3>{squad.tag}</h3>
             <span>{squad.slots}</span>
-        </>
+        </div>
     }, [squad]);
 
     const printPreferences = useCallback((a: 'with'|'without') => {
-        console.log('printing prefs');
         return [...squad[a]]
             .map(id => ({id, tag: tagIdMap.get(id) as string}))
             .sort((a, b) => a.tag.toUpperCase() < b.tag.toUpperCase() ? -1 : 1)
