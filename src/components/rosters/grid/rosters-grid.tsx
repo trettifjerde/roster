@@ -4,6 +4,7 @@ import RosterItem from "../item/roster-item";
 import styles from './grid.module.scss';
 
 function RosterGrid({rosters, header, empty}: {rosters: Roster[], header: string, empty: string}) {
+
     return <>
         <div className="header"><h2>{header}</h2></div>
         <div className={styles.cont}>

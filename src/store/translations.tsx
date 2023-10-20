@@ -39,7 +39,9 @@ export const translations = {
 
         },
         rosters: {
-            empty: 'No rosters'
+            empty: 'No rosters',
+            happy: 'Happy',
+            unhappy: 'Unhappy'
         },
         squadGrid: {
             tag: 'Tag',
@@ -99,7 +101,9 @@ export const translations = {
 
         },
         rosters: {
-            empty: 'Нет ротаций'
+            empty: 'Нет ротаций',
+            happy: 'Рады',
+            unhappy: 'Не рады'
         },
         squadGrid: {
             tag: 'Тэг',

@@ -7,6 +7,7 @@ export default function Spinner({ text, status, abort, abortText }: {
   abortText: string,
   abort: () => void
 }) {
+
   return <div className={styles.s}>
     <div className={styles.inner}>
       <div className="header"><h3>{text}</h3></div>

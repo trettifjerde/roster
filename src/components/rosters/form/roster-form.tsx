@@ -1,4 +1,4 @@
-import { ChangeEventHandler, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { ChangeEventHandler, memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import formStyles from '../../ui/form.module.scss';
 import styles from './form.module.scss';
 import Button from '../../ui/button';
@@ -29,12 +29,11 @@ function cleanOrGetError(ui: typeof translations.en.rosterForm | typeof translat
     }
 }
 
-export default function RosterForm({startCalculating}: {
+function RosterForm({startCalculating}: {
     startCalculating: (p: CalculationParams) => void
 }) {
     const {ui, defaultHappiness} = useContext(StateContext).state;
     const [error, setError] = useState('');
-
     const ref = useRef<HTMLFormElement>(null);
 
     const validateForm = () => {
@@ -120,6 +119,8 @@ export default function RosterForm({startCalculating}: {
         </div>
     </form>
 }
+
+export default memo(RosterForm);
 
 export const FORM = {
     slots: {

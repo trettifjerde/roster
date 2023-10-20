@@ -1,7 +1,7 @@
-import { useContext, useState } from "react";
-import RosterGrid from "../grid/rosters-grid";
+import { useCallback, useContext, useState } from "react";
 import { Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
 
+import RosterGrid from "../grid/rosters-grid";
 import SidesMaker from '../../../workers/sides-maker?worker';
 import RosterMaker from '../../../workers/roster-maker?worker';
 import { StateContext } from "../../../store/context";
@@ -16,11 +16,12 @@ export default function RosterPane() {
     const [sidesMaker, setSidesMaker] = useState(() => new SidesMaker());
     const [rosterMaker, setRosterMaker] = useState(() => new RosterMaker());
     const {squads, ui} = useContext(StateContext).state;
+    console.log('RosterPane');
 
     const [status, setStatus] = useState<JSX.Element | null>(null);
     const [rosters, setRosters] = useState<Roster[]>([]);    
 
-    const startCalculating = ({slots, side, squad} : CalculationParams) => {
+    const startCalculating = useCallback(({slots, side, squad} : CalculationParams) => {
         setRosters([]);
         const allSquads = squads.reduce((acc, squad) => acc + BigInt(squad.id), BigInt(0));
 
@@ -71,7 +72,7 @@ export default function RosterPane() {
             squadHappy: squad,
             slotsDiff: slots
         } as SidesMakerRequest);        
-    };
+    }, [squads, rosterMaker, sidesMaker, ui]);
 
     const abortCalculating = () => {
         sidesMaker.terminate();

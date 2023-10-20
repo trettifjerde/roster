@@ -1,6 +1,6 @@
 import { calcDefaultHappiness, makeSquadFromForm, makeSquadFromSquadInfo } from "../util/helpers"
 import { SQUADS_INFO } from "../util/squads-info"
-import { Squad, TagIdMap } from "../util/types"
+import { Squad, SquadsMap, TagIdMap } from "../util/types"
 import { Language, translations } from "./translations";
 import * as a from "./actions"
 

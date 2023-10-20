@@ -1,0 +1,40 @@
+@use '/src/styles/variables' as *;
+.note {
+    position: absolute;
+    background-color: $primary-color;
+    padding: $gap-m;
+    border-radius: $border-radius;
+    max-width: 200px;
+    box-shadow: 0 0 7px $dark;
+
+    h4 {
+        text-align: center;
+        margin-block: $gap-def;
+    }
+}
+
+.happiness {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    text-align: center;
+    gap: $gap-def;
+
+    b {
+        font-weight: 500;
+        font-size: 0.7rem;
+    }
+}
+
+.happy, .unhappy {
+    padding: $gap-def;
+    border-radius: $border-radius;
+}
+
+.happy {
+    background-color: $greenish;
+}
+
+.unhappy {
+    background-color: $reddish;
+}

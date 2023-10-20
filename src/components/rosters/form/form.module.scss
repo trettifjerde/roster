@@ -2,26 +2,44 @@
 
 .form {
     max-width: 800px;
-    margin-inline: auto;
     margin-block: 2.5rem 4rem;
+    margin-inline: $gap-def;
+    
+    @include res-min($breakpoint-m) {
+        margin-inline: auto;
+    }
 }
 
 .lblcont {
     width: 100%;
     display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: $gap-l;
-    align-items: center;
-    margin-block: $gap-def;
+    grid-template-columns: 1fr;
+    gap: $gap-m;
+    margin-block: $gap-l;
+
+    input {width: 100%;}
+
+    @include res-min($breakpoint-m) {
+        grid-template-columns: 2fr 1fr;
+        align-items: center;
+        gap: $gap-l;
+        margin-block: $gap-def;
+
+        div {
+            text-align: start;
+        }
+    }
 
     label {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: $gap-def;
         align-items: center;
-    }
+        line-height: 1.2;
+        
+        @include res-min($breakpoint-m) {
+            grid-template-columns: 1fr 1fr;
 
-    div {
-        text-align: start;
+        }
     }
 }

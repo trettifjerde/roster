@@ -1,12 +1,13 @@
-import { useContext } from "react";
+import { memo, useContext } from "react";
 import Button from "../../ui/button";
 import styles from './header.module.scss';
 import { StateContext } from "../../../store/context";
 import { SwitchLanguage } from "../../../store/actions";
 import { Language } from "../../../store/translations";
 
-export default function Header() {
+function Header() {
     const {state, dispatch} = useContext(StateContext);
+    console.log('Header');
 
     const switchLang = () => {
         dispatch(new SwitchLanguage(state.ui.lang as Language));
@@ -23,3 +24,5 @@ export default function Header() {
     </>
     
 }
+
+export default memo(Header);
