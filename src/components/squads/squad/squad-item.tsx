@@ -7,7 +7,10 @@ import Button from "../../ui/button";
 import styles from './squad.module.scss';
 
 
-function SquadComponent({squad, tagIdMap, forceCollapse}: {squad: Squad, tagIdMap: TagIdMap, forceCollapse: boolean}, ref: Ref<HTMLDivElement>|null) {
+function SquadComponent({squad, tagIdMap, forceCollapse, withS, withoutS, edit}: {
+    squad: Squad, tagIdMap: TagIdMap, 
+    forceCollapse: boolean, withS: string, withoutS: string, edit: string
+}, ref: Ref<HTMLDivElement>|null) {
     const [editMode, setEditMode] = useState(false);
 
     const toggleMode = useCallback(() => setEditMode(prev => !prev), [setEditMode]);
@@ -33,11 +36,11 @@ function SquadComponent({squad, tagIdMap, forceCollapse}: {squad: Squad, tagIdMa
             <AnimatePresence mode="wait">
                 {!editMode && <motion.div layout className={styles.info} 
                     initial={{opacity: 0, y: -100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: 100}}>
-                    <div className={styles.note}>With</div>
-                    <div className={styles.note}>Without</div>
+                    <div className={styles.note}>{withS}</div>
+                    <div className={styles.note}>{withoutS}</div>
                     <div>{printWiths}</div>
                     <div>{printWithouts}</div>
-                    <Button onClick={toggleMode}>Edit</Button>
+                    <Button onClick={toggleMode}>{edit}</Button>
                 </motion.div>}
 
                 {editMode &&<SquadForm squad={squad} toggleForm={toggleMode}/>}

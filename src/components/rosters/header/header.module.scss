@@ -1,0 +1,19 @@
+@use '/src/styles/variables' as *;
+
+.header {
+    text-align: center;
+    h1 {
+        margin-bottom: $gap-def;
+    }
+    p {
+        max-width: 800px;
+        margin-inline: auto;
+    }
+}
+
+.btn {
+    position: fixed;
+    z-index: 2;
+    top: $gap-l;
+    right: $gap-l;
+}

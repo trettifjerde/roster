@@ -1,7 +1,8 @@
 @use '/src/styles/variables' as *;
 
 .cont {
-    margin: $gap-def;
+    margin-inline: $gap-def;
+    margin-block: $gap-m;
 
     @include res-min($breakpoint-m) {
         margin-block: $gap-m;
@@ -9,7 +10,7 @@
     }
 
     @include res-min($breakpoint-l) {
-        margin-block: $gap-l;
+        margin-block: 10vh;
         margin-inline: 5vw;
     }
 

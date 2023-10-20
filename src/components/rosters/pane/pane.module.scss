@@ -1,12 +1,12 @@
 @use '/src/styles/variables' as *;
 
 .pane {
-    width: fit-content;
-    margin-inline: auto;
     margin-block: $gap-l;
 }
 
 .form {
+    margin-inline: auto;
+    margin-block: $gap-l;
     padding: $gap-m;
     border-radius: $border-radius;
     border: 1px solid $secondary-color;

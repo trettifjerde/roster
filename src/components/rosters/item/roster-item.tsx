@@ -1,27 +1,32 @@
 import { useContext } from 'react';
-import { Roster, ServerInfo, SideInfo } from '../../../util/types';
+import { Roster, SideInfo } from '../../../util/types';
 import styles from './item.module.scss';
 import { StateContext } from '../../../store/context';
 
 export default function RosterItem({roster} : {roster: Roster}) {
-    return <div className={styles.item}>
-        <Server server={roster[0]} />
-        <Server server={roster[1]} />
-    </div>
-}
-
-function Server({server}: {server: ServerInfo}) {
-    return <div className={styles.server}>
-        <Side side={server[0]} />
-        <Side side={server[1]} />
+    return <div className={styles.roster}>
+        {roster.map((side, i) => <Side key={i} side={side}/>)}
     </div>
 }
 
 function Side({side}: {side: SideInfo}) {
-    const {tagIdMap} = useContext(StateContext).state;
+    const {squads, tagIdMap, ui} = useContext(StateContext).state;
+
+    const showDetails = (id: number) => {
+        const squadInfo = squads.find(s => s.id === id);
+        if (squadInfo) {
+            console.log(squadInfo);
+        }
+    };
 
     return <div className={styles.side}>
-        <div>Slots: {side.slots}. Happiness: {side.happiness}</div>
-        <div>{side.squads.map(squad => <span key={squad}>{tagIdMap.get(squad)}</span>)}</div>
+        <div className={styles.info}>
+            <div>{ui.common.slots}: {side.slots}</div>
+            <div>{ui.common.happiness}: {side.happiness}</div>
+        </div>
+        <div className={styles.squads}>{side.squads
+            .map(squad => ({id: squad, tag: tagIdMap.get(squad) as string}))
+            .sort((a, b) => a.tag.toUpperCase() < b.tag.toUpperCase() ? -1 : 1)
+            .map(({id, tag}) => <span key={id} onMouseOver={() => showDetails(id)}>{tag}</span>)}</div>
     </div>
 }

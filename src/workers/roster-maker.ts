@@ -1,46 +1,55 @@
 import { getSquadIdsFromMask } from "../util/helpers";
-import { ReadySide, Roster, RosterMakerRequest, RosterMakerResponse, RosterSlaveRequest, RosterSlaveResponse, Rotation, Side, SideInfo } from "../util/types";
+import { ReadySide, Roster, RosterMakerRequest, RosterMakerResponse, RosterSlaveRequest, RosterSlaveResponse, Rotation, SideInfo } from "../util/types";
 import SlaveWorker from './roster-slave?worker';
 
-const slaves : Worker[] = [];
+const slaves: {[key: number]: Worker} = {};
 const SLAVES_PARTS = [8, 6.125, 4.29, 2.52, 1];
-let sides : Side[] = [];
-let allSquads = BigInt(0);
+
+let sideSet : Set<bigint>;
+let sides : ReadySide[];
+let allSquads: bigint;
+let slotsDiff: number;
+let slaveDone: number;
 let time : number;
-let slaveDone = 0;
-const sidesCounter : {[key: string] : number} = {};
 
 self.onmessage = ({data}: {data: RosterMakerRequest}) => {
     switch (data.command) {
         case 'init':
+            sideSet = new Set();
+            sides = [];
             allSquads = data.allSquads;
+            slotsDiff = data.slotsDiff;
+            slaveDone = 0;
             break;
 
         case 'update':
-            sides.push(data.side);
-            if (!(data.side.squads.toString() in sidesCounter)) {
-                sidesCounter[data.side.squads.toString()] = 0;
+            if (!sideSet.has(data.side.squads)) {
+                sides.push(data.side);
+                sideSet.add(data.side.squads);
+                self.postMessage({status: 'announce-side', sidesLength: sides.length} as RosterMakerResponse)
             }
-            sidesCounter[data.side.squads.toString()] += 1;
             break;
 
-        case 'done':
-            for (const [side, count] of Object.entries(sidesCounter)) {
-                if (count > 1) {
-                    console.log('duplicate', side);
-                }
-            }
-            console.log('sides length', sides.length);
+        case 'start':
+            self.postMessage({status: 'starting', sidesLength: sides.length} as RosterMakerResponse);
             startCombining();
+            break;
+
+        case 'terminate':
+            for (const i in slaves) {
+                slaves[i].terminate();
+                delete slaves[i];
+            }
+            self.postMessage({status: 'slaves-terminated'} as RosterMakerResponse)
             break;
     }
 }
 
 function getBatches() {
-    const batches : {sides: Side[], limit: number}[] = [];
+    const batches : {sides: ReadySide[], limit: number}[] = [];
     
     for (let i = 0; i < SLAVES_PARTS.length; i++) {
-        const batch : {sides: Side[], limit: number} = {
+        const batch : {sides: ReadySide[], limit: number} = {
             sides: [...sides], 
             limit: Math.round(sides.length / SLAVES_PARTS[i])
         };
@@ -61,12 +70,18 @@ function startCombining() {
 
             switch (data.status) {
                 case 'update':
-                    const roster = buildRoster(data.rotation);
-                    self.postMessage({status: 'update', roster} as RosterMakerResponse)
+                    const roster = isValidRoster(data.rotation);
+                    if (roster)
+                        self.postMessage({status: 'update', roster} as RosterMakerResponse);
+                    else 
+                        console.log(data.rotation, 'from slave', i, 'has failed slots diff test');
                     break;
 
                 case 'done':
                     slaveDone++;
+                    console.log('Slave', i, 'done');
+                    delete slaves[i];
+
                     if (slaveDone === batches.length) {
                         console.log('slaves ready in', ((performance.now() - time) / (60 * 1000)));
                         self.postMessage({status: 'done'} as RosterMakerResponse)
@@ -80,25 +95,28 @@ function startCombining() {
             command: 'init', 
             limit: batches[i].limit,
             sides: batches[i].sides, 
-            slaveIndex: i,
             allSquads
         } as RosterSlaveRequest);
 
-        slaves.push(worker);
+        slaves[i] = worker;
     }
 
     time = performance.now();
     
-    for (const worker of slaves) {
+    for (const worker of Object.values(slaves)) {
         worker.postMessage({command: 'start'} as RosterSlaveRequest);
     }
 }
 
-function buildRoster(rot: Rotation) {
-    return [
-        [buildSide(rot[0]), buildSide(rot[1])], 
-        [buildSide(rot[2]), buildSide(rot[3])]
-    ] as Roster;
+function isValidRoster(rot: Rotation) {
+    const sorted = [...rot].sort((a, b) => b.slots - a.slots);
+
+    for (const [i, j] of [[0, 1], [2, 3]]) {
+        if (Math.abs(sorted[i].slots - sorted[j].slots) > slotsDiff) 
+            return null;
+    }
+
+    return sorted.map(side => buildSide(side)) as Roster;
 }
 
 function buildSide(side: ReadySide) {

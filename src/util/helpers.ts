@@ -53,3 +53,8 @@ export function getSquadIdsFromMask(mask: bigint) {
     }
     return ids;
 }
+
+export function calcDefaultHappiness(squads: Squad[]) {
+    const totalSlots = squads.reduce((acc, squad) => acc + squad.slots, 0);
+    return Math.round(((totalSlots / 4) / (totalSlots / squads.length)) * 1.2);
+}

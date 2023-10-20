@@ -24,7 +24,7 @@ function Spoiler({header, children, className, initial, forceCollapse}: {
 
 
     return <motion.div layout className={styles.spoiler} ref={ref}>
-        <motion.div layout className={styles.header} onClick={toggleSpoiler}>
+        <motion.div layout className={`header ${styles.header} ${open ? styles.open : ''}`} onClick={toggleSpoiler}>
             {header()}
         </motion.div>
         <motion.div layout className={styles.body} variants={variants} initial="hidden" animate={open ? 'visible' : 'hidden'}>

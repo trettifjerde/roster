@@ -9,6 +9,7 @@ import formStyles from '../../ui/form.module.scss';
 
 export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleForm: MouseEventHandler}) {
     const {state, dispatch} = useContext(StateContext);
+    const {squads, ui} = state;
     const [error, setError] = useState('');
     const [deleteMode, setDeleteMode] = useState(false);
 
@@ -22,7 +23,7 @@ export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleFor
         const tag = formData.get('tag')?.toString().trim() || '';
         const tagLC = tag.toLowerCase();
         
-        if (!tag || ((tagLC !== squad?.tag.toLowerCase()) && state.squads.some(s => s.tag.toLowerCase() === tagLC))){
+        if (!tag || ((tagLC !== squad?.tag.toLowerCase()) && squads.some(s => s.tag.toLowerCase() === tagLC))){
             setError('Invalid squad tag');
             return;
         }
@@ -44,7 +45,7 @@ export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleFor
         dispatch(squad ? new UpdateSquad(updSquad) : new AddSquad(updSquad));
         toggleForm(e);
 
-    }, [state.squads, setError]);
+    }, [squads, setError]);
 
     const blockSubmit : FormEventHandler = useCallback((e) => e.preventDefault(), []);
     const clearError: MouseEventHandler = useCallback((e) => setError(''), [setError]);
@@ -59,36 +60,36 @@ export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleFor
             className={formStyles.form} onSubmit={blockSubmit} onClickCapture={clearError}>
         <p className={formStyles.err}>{error}</p>
         <div className={formStyles.cont}>
-            <label>Tag</label>
+            <label>{ui.squadGrid.tag}</label>
             <input name="tag" type='text' defaultValue={squad ? squad.tag : ''} />
         </div>
         <div className={formStyles.cont}>
-            <label>Slots</label>
+            <label>{ui.common.slots}</label>
             <input name="slots" type='number' min={0} defaultValue={squad ? squad.slots : 0}/>
         </div>
 
-        {squad && !deleteMode && <Button onClick={toggleDeleteSquad}>Delete squad</Button>}
+        {squad && !deleteMode && <Button onClick={toggleDeleteSquad}>{ui.squadGrid.deleteSquad}</Button>}
         {squad && deleteMode && <div className={formStyles.btncont}>
-            <div>Delete squad?</div>
-            <Button onClick={deleteSquad}>Yes</Button>
-            <Button onClick={toggleDeleteSquad}>Cancel</Button>
+            <div>{ui.squadGrid.deleteSquad}?</div>
+            <Button onClick={deleteSquad}>{ui.btns.yes}</Button>
+            <Button onClick={toggleDeleteSquad}>{ui.btns.cancel}</Button>
         </div>}
 
-        <SquadPrefsForm squad={squad} squads={state.squads}/>
+        <SquadPrefsForm prefs={ui.squadGrid.preferences} squad={squad} squads={squads}/>
         <div className={formStyles.btncont}>
-            <Button onClick={validateForm}>Save</Button>
-            <Button onClick={toggleForm}>Cancel</Button>
+            <Button onClick={validateForm}>{ui.btns.save}</Button>
+            <Button onClick={toggleForm}>{ui.btns.cancel}</Button>
         </div>
     </motion.form>
     
 }
 
-function SquadPrefsForm({squad, squads}: {squad?: Squad, squads: Squad[]}) {
+function SquadPrefsForm({prefs, squad, squads}: {prefs: string, squad?: Squad, squads: Squad[]}) {
 
     const sqs = useState(squad ? squads.filter(s => s.tag !== squad.tag) : squads)[0];
 
     return <div className={styles.prefs}>
-        <label>Preferences</label>
+        <label>{prefs}</label>
         <div className={styles.checkboxes}>
             {sqs.map(s => <SquadPref key={s.tag} tag={s.tag} id={s.id}
                 withS={!!squad && squad.with.has(s.id)}

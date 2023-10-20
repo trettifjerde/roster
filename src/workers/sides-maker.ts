@@ -10,25 +10,30 @@ type MakerInfo = {
     smallestSquadSize: number,
 };
 
-let slots_diff: number;
-let side_happiness_threshold: number;
-let squad_happiness_threshold: number;
+let SLOTS_DIFF: number;
+let SIDE_HAPPINNESS_THRESHOLD: number;
+let SQUAD_HAPPINESS_THRESHOLD: number;
+let INTERMEDIATE_SQUAD_HAPPINESS_THRESHOLD: number;
 
 self.onmessage = (e: {data: SidesMakerRequest}) => {
-    console.log('SidesMaker received a start command');
-    console.log(e.data);
-    const time = performance.now();
-    permutateSquads(e.data);
-    console.log('SidesMaker: permutations complete');
-    console.log('SidesMaker done in', (performance.now() - time) / 60000);
+    const data = e.data;
+
+    switch (data.command) {
+        case 'init':
+            console.log('SidesMaker received a start command');
+            const time = performance.now();
+            permutateSquads(e.data);
+            console.log('SidesMaker: permutations complete');
+            console.log('SidesMaker done in', (performance.now() - time) / 60000);
+            break;
+    }
 };
 
 function permutateSquads({squads, sideHappy, slotsDiff, squadHappy} : SidesMakerRequest) {
-    slots_diff = slotsDiff;
-    side_happiness_threshold = sideHappy;
-    squad_happiness_threshold = squadHappy;
-
-    console.log(slots_diff, side_happiness_threshold, squad_happiness_threshold);
+    SLOTS_DIFF = slotsDiff;
+    SIDE_HAPPINNESS_THRESHOLD = sideHappy;
+    SQUAD_HAPPINESS_THRESHOLD = squadHappy;
+    INTERMEDIATE_SQUAD_HAPPINESS_THRESHOLD = squadHappy - 4;
     
     const memo : SideMakerMemo = {};
     const {maxSlotsPerSide, minSlotsPerSide, smallestSquadSize} = calcSlotsInfo(squads);
@@ -37,7 +42,7 @@ function permutateSquads({squads, sideHappy, slotsDiff, squadHappy} : SidesMaker
     const info : MakerInfo = {sortedIds, squadsMap, memo, maxSlotsPerSide, minSlotsPerSide, smallestSquadSize};
     
     makeSides(sortedIds.length - 1, maxSlotsPerSide, info);
-    self.postMessage({command: 'done'} as SidesMakerResponse);
+    self.postMessage({status: 'done'} as SidesMakerResponse);
 }
 
 function makeSides(index: number, slotsLeft: number, info: MakerInfo) {
@@ -60,41 +65,46 @@ function makeSides(index: number, slotsLeft: number, info: MakerInfo) {
 
     
     if (index === info.sortedIds.length - 1) {
-        
-        makeSides(index - 1, slotsLeft, info);
-        
-        const withSquad = makeSides(index - 1, slotsLeft - squad.slots, info);   
-        for (const side of withSquad) {
-            if (areSlotsReady(side.slots + squad.slots, info)) {
-                
-                const updSide = addSquadToSide(true, side, squad, info);   
-                if (updSide)
-                self.postMessage({command: 'update', side: updSide} as SidesMakerResponse);
+        {
+            const withSquad = makeSides(index - 1, slotsLeft - squad.slots, info);   
+            for (const side of withSquad) {
+                if (areSlotsReady(side.slots + squad.slots, info)) {
+                    
+                    const updSide = addSquadToSide(true, side, squad, info);   
+                    if (updSide)
+                    self.postMessage({status: 'update', side: updSide} as SidesMakerResponse);
+                }
+
+            }
         }
-    }
+        makeSides(index - 1, slotsLeft, info);
+
         return [];
     }
 
     const sides : Side[] = [];
+
     const nextSquadSlots = info.squadsMap.get(info.sortedIds[index + 1])!.slots;
-    const withSquad = makeSides(index - 1, slotsLeft - squad.slots, info);  
+    {
+        const withSquad = makeSides(index - 1, slotsLeft - squad.slots, info);  
 
-    for (const side of withSquad) {
+        for (const side of withSquad) {
 
-        if (areSlotsReady(side.slots + squad.slots, info)) {
+            if (areSlotsReady(side.slots + squad.slots, info)) {
 
-            const updSide = addSquadToSide(true, side, squad, info);
+                const updSide = addSquadToSide(true, side, squad, info);
 
-            if (updSide)
-                self.postMessage({command: 'update', side: updSide} as SidesMakerResponse);
-        }
+                if (updSide)
+                    self.postMessage({status: 'update', side: updSide} as SidesMakerResponse);
+            }
 
-        else if (canBeUpdated(side.slots + squad.slots, nextSquadSlots, info)) {
+            if (canBeUpdated(side.slots + squad.slots, nextSquadSlots, info)) {
 
-            const updSide = addSquadToSide(false, side, squad, info);
+                const updSide = addSquadToSide(false, side, squad, info);
 
-            if (updSide) 
-                sides.push(updSide);                
+                if (updSide) 
+                    sides.push(updSide);                
+            }
         }
     }
 
@@ -102,8 +112,9 @@ function makeSides(index: number, slotsLeft: number, info: MakerInfo) {
     
     for (const side of withoutSquad) {
 
-        if (canBeUpdated(side.slots, nextSquadSlots, info)) 
+        if (canBeUpdated(side.slots, nextSquadSlots, info)) {
             sides.push(side); 
+        }
     }
 
     info.memo[hash] = sides;
@@ -124,6 +135,7 @@ function areSlotsReady(slots: number, info: MakerInfo) {
 }
 
 function addSquadToSide(isSideReady: boolean, side: Side, squad: Squad, info: MakerInfo) {
+
     const {squadsMap} = info;
     const updSide : Side = {...side};
     const squadIds = [...getSquadIdsFromMask(side.squads), squad.id];
@@ -158,7 +170,7 @@ function getHappiness(ids: number[], squads: SquadsMap, isSideReady: boolean) {
                 }
                 else if (s1.without.has(s2.id)) {
                     const h = (squadsHappiness.get(s1.id) || 0) - 2;
-                    if (h < squad_happiness_threshold)
+                    if (h < INTERMEDIATE_SQUAD_HAPPINESS_THRESHOLD)
                         return null;
                     squadsHappiness.set(s1.id, h);
                 }
@@ -167,8 +179,16 @@ function getHappiness(ids: number[], squads: SquadsMap, isSideReady: boolean) {
     }
     const happiness = Array.from(squadsHappiness.values()).reduce((acc, v) => acc + v, 0);
 
-    if (isSideReady && (happiness < side_happiness_threshold))
-        return null;
+    if (isSideReady) {
+        if (happiness < SIDE_HAPPINNESS_THRESHOLD) 
+            return null;
+        else {
+            for (const squadHappy of squadsHappiness.values()) {
+                if (squadHappy < SQUAD_HAPPINESS_THRESHOLD)
+                    return null;
+            }
+        }
+    }
 
     return happiness;
 }
@@ -183,8 +203,9 @@ function calcSlotsInfo(squads: Squad[]) {
         smallestSquadSize = Math.min(smallestSquadSize, squad.slots);
     }
 
-    const maxSlotsPerSide = Math.floor(totalSlots / 4) + slots_diff;
-    const minSlotsPerSide = maxSlotsPerSide - slots_diff * 2;
+    const mltplr = Math.floor(SLOTS_DIFF * 1.5);
+    const maxSlotsPerSide = Math.floor(totalSlots / 4) + mltplr;
+    const minSlotsPerSide = maxSlotsPerSide - mltplr * 2;
 
     console.log('total slots', totalSlots, 'max slots per side', maxSlotsPerSide, 'min slots per side', minSlotsPerSide, 'smallest squad slots', smallestSquadSize);
 

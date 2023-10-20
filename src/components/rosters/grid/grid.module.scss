@@ -1,7 +1,19 @@
 @use '/src/styles/variables' as *;
 
+.cont {
+    padding: $gap-m $gap-l;
+    border: 1px solid $secondary-color;
+    border-radius: 0 0 $border-radius $border-radius;
+}
+
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(auto, 400px));
+    grid-template-columns: repeat(auto-fit, minmax(auto, 500px));
+    justify-content: center;
     gap: $gap-m;
+}
+
+.empty {
+    text-align: center;
+    margin-block: $gap-m;
 }

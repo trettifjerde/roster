@@ -1,49 +1,24 @@
-import { ChangeEventHandler, useRef, useState } from 'react';
+import { ChangeEventHandler, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import formStyles from '../../ui/form.module.scss';
 import styles from './form.module.scss';
 import Button from '../../ui/button';
 import { CalculationParams } from '../pane/roster-pane';
+import { StateContext } from '../../../store/context';
+import { translations } from '../../../store/translations';
 
-const DEFAULT_VALUES = {
-    slots: 2,
-    side: 10,
-    squad: -3
-};
-
-type Key = keyof typeof DEFAULT_VALUES;
-
-const MIN_MAX = {
-    slots: [0, 4],
-    side: [0, 20],
-    squad: [-8, 4]
-}
-
-const KEYS : Key[] = ['slots', 'side', 'squad'];
-
-function cleanOrGetError(key: Key, v: string) {
+function cleanOrGetError(ui: typeof translations.en.rosterForm | typeof translations.ru.rosterForm, key: InputName, v: string) {
     const value = +v;
+    const info = FORM[key];
 
     try {
 
         if (!v || isNaN(value)) {
-            throw new TypeError(`Invalid ${key}`);
+            throw new TypeError(`Invalid ${ui[key].label.toLowerCase()}`);
         }
 
-        switch (key) {
-            case 'squad':
-                if (value < MIN_MAX.squad[0] || value > MIN_MAX.squad[1]) 
-                    throw new RangeError(`${key} must be between ${MIN_MAX[key][0]} and ${MIN_MAX[key][1]}`);
-                break;
+        if (value < info.min || value > info.max) 
+            throw new RangeError(`${ui[key].label.toLowerCase()} must be between ${info.min} and ${info.max}`);
 
-            case 'slots':
-                if (value < MIN_MAX.slots[0] || value > MIN_MAX.slots[1]) 
-                    throw new RangeError(`${key} must be between ${MIN_MAX[key][0]} and ${MIN_MAX[key][1]}`);
-                break;
-            case 'side':
-                if (value < MIN_MAX.side[0] || value > MIN_MAX.side[1]) 
-                    throw new RangeError(`${key} must be between ${MIN_MAX[key][0]} and ${MIN_MAX[key][1]}`);
-                break;
-        }
         return {val: value, err: ''}
     }
     catch (err) {
@@ -54,7 +29,10 @@ function cleanOrGetError(key: Key, v: string) {
     }
 }
 
-export default function RosterForm({startCalculating}: {startCalculating: (p: CalculationParams) => void}) {
+export default function RosterForm({startCalculating}: {
+    startCalculating: (p: CalculationParams) => void
+}) {
+    const {ui, defaultHappiness} = useContext(StateContext).state;
     const [error, setError] = useState('');
 
     const ref = useRef<HTMLFormElement>(null);
@@ -63,13 +41,13 @@ export default function RosterForm({startCalculating}: {startCalculating: (p: Ca
 
         if (ref.current) {
 
-            const params : Map<Key, number> = new Map();
+            const params : CalculationParams = {slots: 0, side: 0, squad: 0};
 
-            for (const key of KEYS) {
-                const {val, err} = cleanOrGetError(key, ref.current[key].value);
+            for (const key of Object.keys(FORM) as InputName[]) {
+                const {val, err} = cleanOrGetError(ui.rosterForm, key, ref.current[key].value);
                 
                 if (val) {
-                    params.set(key, val);
+                    params[key] = val;
                 }
                 else {
                     markError(ref.current[key], err);
@@ -77,30 +55,30 @@ export default function RosterForm({startCalculating}: {startCalculating: (p: Ca
                 }
             }
 
-            const values : CalculationParams = {slots: 0, side: 0, squad: 0};
-            for (const [key, value] of params) {
-                values[key] = value;
-            }
-
-            startCalculating(values);
+            startCalculating(params);
         }
     };
 
     const setDefault = () => {
         if (ref.current) {
 
-            for (const key of KEYS) {
+            for (const [key, value] of Object.entries(FORM)) {
                 cleanError(ref.current[key]);
-                ref.current[key].value = DEFAULT_VALUES[key];
+                if (key !== 'side') {
+                    ref.current[key].value = value.defaultValue;
+                }
+                else {
+                    ref.current[key].value = defaultHappiness;
+                }
             }
         }
     }
 
     const validateValue : ChangeEventHandler<HTMLInputElement> = (e) => {
-        const key = e.target.name as Key;
+        const key = e.target.name as InputName;
         const v = e.target.value;
 
-        const {err} = cleanOrGetError(key, v);
+        const {err} = cleanOrGetError(ui.rosterForm, key, v);
 
         if (err) 
             markError(e.target, err);
@@ -118,29 +96,47 @@ export default function RosterForm({startCalculating}: {startCalculating: (p: Ca
         setError(err);
     }
 
+    useEffect(() => {
+        if (ref.current) {
+            ref.current['side'].value = defaultHappiness;
+        }
+    }, [ref, defaultHappiness]);
+
     return <form className={`${formStyles.form} ${styles.form}`} ref={ref}
         onSubmit={(e) => e.preventDefault()}>
         <p className={formStyles.err}>{error}</p>
-        <div className={formStyles.lblcont}>
-            <div>
-                <label>Min side happiness</label>
-                <input name="side" min={MIN_MAX.side[0]} max={MIN_MAX.side[1]} step="1" 
-                    defaultValue={DEFAULT_VALUES.side} onChange={validateValue} onFocus={(e) => cleanError(e.target)} />
-            </div>
-            <div>
-                <label>Min squad happiness</label>
-                <input name="squad" min={MIN_MAX.squad[0]} max={MIN_MAX.squad[1]} step="1" 
-                    defaultValue={DEFAULT_VALUES.squad} onChange={validateValue} onFocus={(e) => cleanError(e.target)}/>
-            </div>
-            <div>
-                <label>Slots diff</label>
-                <input name="slots" min={MIN_MAX.slots[0]} max={MIN_MAX.slots[1]} step="1" 
-                    defaultValue={DEFAULT_VALUES.slots} onChange={validateValue} onFocus={(e) => cleanError(e.target)}/>
-            </div>
+        <div>
+            {Object.entries(FORM).map(([key, value]) => <div className={styles.lblcont} key={key}>
+                <label>{ui.rosterForm[key as InputName].label}
+                    <input name={key} min={value.min} max={value.max} step="1" 
+                        defaultValue={value.defaultValue === null ? defaultHappiness : value.defaultValue} onChange={validateValue} onFocus={(e) => cleanError(e.target)} />
+                </label>
+                <div className='note'>{ui.rosterForm[key as InputName].description}</div>
+            </div>)}
         </div>
         <div className={formStyles.btncont}>
-            <Button onClick={validateForm}>Form roster</Button>
-            <Button onClick={setDefault}>Set default values</Button>
+            <Button onClick={validateForm}>{ui.btns.formRoster}</Button>
+            <Button onClick={setDefault}>{ui.btns.setDefault}</Button>
         </div>
     </form>
 }
+
+export const FORM = {
+    slots: {
+        defaultValue: 2,
+        min: 0,
+        max: 4,
+    },
+    side: {
+        defaultValue: null,
+        min: 0,
+        max: 20,
+    },
+    squad: {
+        defaultValue: -1,
+        min: -6,
+        max: 5,
+    }
+}
+
+export type InputName = keyof typeof FORM;

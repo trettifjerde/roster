@@ -9,21 +9,29 @@
 }
 
 .header {
-    background-color: $primary-color;
-    padding: $gap-def $gap-m;
     display: flex;
     align-items: center;
     justify-content: space-between;
     transition: background-color .2s ease-in-out;
     cursor: pointer;
+    border-radius: $border-radius;
 
     > :first-child {
         flex-grow: 1;
     }
 
     &::after {
-        content: 'v';
-        margin-inline: $gap-def;
+        content: '⌄';
+        margin-left: $gap-def;
+        transition: transform .2s ease-in-out;
+    }
+
+
+    &.open {
+        border-radius: 0;
+        &::after {
+            transform: rotate(-180deg);
+        }
     }
 
     @media (pointer: fine) {

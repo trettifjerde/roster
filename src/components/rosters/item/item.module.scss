@@ -1,0 +1,42 @@
+@use '/src/styles/variables' as *;
+
+.roster {
+    display: grid;
+    grid-template-columns: 1fr 1fr;  
+    justify-content: center;
+    gap: $gap-def;
+    padding: $gap-def;
+    border: 1px solid $secondary-color;
+    border-radius: $border-radius;
+    background-color: $primary-color;
+}
+
+.side {
+    padding: $gap-m;
+    border-radius: $border-radius;
+    font-size: 0.9rem;
+
+    &:nth-child(odd) {
+        background-color: $reddish;
+    }
+    &:nth-child(even) {
+        background-color: $bluish;
+    }
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    border-bottom: 1px solid $pale;
+    padding-bottom: $gap-def;
+}
+
+.squads {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 0 $gap-def;
+    padding: $gap-def;
+}

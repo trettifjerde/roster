@@ -2,7 +2,6 @@
 
 .form {
     width: fit-content;
-    color: white;
     text-align: center;
 
     label {
@@ -15,7 +14,6 @@
 
     input {
         background-color: $pale;
-        color: white;
     }
 }
 
@@ -42,20 +40,7 @@
 
 .btncont {
     margin-top: $gap-m;
-}
-
-.lblcont {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $gap-def;
-
-    label {
-        margin-right: $gap-def;
-    }
-
-    input {
-        max-width: 5rem;
-    }
+    margin-inline: auto;
 }
 
 .invalid {
