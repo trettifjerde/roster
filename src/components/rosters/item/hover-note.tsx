@@ -1,4 +1,3 @@
-import { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import styles from './hover-note.module.scss';
 import { HappinessInfo } from "../../../util/types";
@@ -10,14 +9,14 @@ export default function HoverNote({texts, happinessInfo, position}: {texts: {hap
             <div className={styles.happy}>
                 <div><b>{texts.happy}</b></div>
                 <div>
-                    {happinessInfo.happy.map(s => <p>{s}</p>)}
+                    {happinessInfo.happy.map(s => <p key={s}>{s}</p>)}
                     {happinessInfo.happy.length === 0 && <p>-</p>}
                 </div>
             </div>
             <div className={styles.unhappy}>
                 <div><b>{texts.unhappy}</b></div> 
                 <div>
-                    {happinessInfo.unhappy.map(s => <p>{s}</p>)}
+                    {happinessInfo.unhappy.map(s => <p key={s}>{s}</p>)}
                     {happinessInfo.unhappy.length === 0 && <p>-</p>}
                 </div>
             </div>
