@@ -17,7 +17,6 @@ class SidesMaker {
         const sortedSquads = [...squads].sort((a, b) => b.slots - a.slots);
         const squadsMap : SquadsMap = new Map();
         const sortedIds : number[] = [];
-        const mltplr = Math.floor(slotsDiff * 2);
         let totalSlots = 0;
         let smallestSquadSize = 1000;
         
@@ -27,11 +26,13 @@ class SidesMaker {
             totalSlots += squad.slots;
             smallestSquadSize = Math.min(smallestSquadSize, squad.slots);
         }
-    
+        
+        const mltplr = Math.floor(smallestSquadSize / 2);
+        const squadsPerSide = totalSlots / 4;
         this.sortedIds = sortedIds;
         this.squadsMap = squadsMap;
-        this.maxSlotsPerSide = Math.floor(totalSlots / 4) + mltplr;
-        this.minSlotsPerSide = this.maxSlotsPerSide - mltplr * 2;
+        this.maxSlotsPerSide = Math.ceil(squadsPerSide) + mltplr;
+        this.minSlotsPerSide = Math.floor(squadsPerSide) - mltplr;
         this.smallestSquadSize = smallestSquadSize;
         this.intermediateHappiness = this.sideHappiness - Math.floor((squads.length / 8) *  (squads.length / 16) * 2);
         this.intermediateHappinessCheckAtSlots = Math.floor(this.maxSlotsPerSide * 0.6);
