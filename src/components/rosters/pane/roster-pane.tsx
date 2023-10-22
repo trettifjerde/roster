@@ -23,6 +23,7 @@ export default function RosterPane() {
 
     const startCalculating = useCallback(({slots, happiness} : CalculationParams) => {
         setRosters([]);
+        setIfNotFound(false);
 
         const allSquads = squads.reduce((acc, squad) => acc + BigInt(squad.id), BigInt(0));
 

@@ -17,7 +17,7 @@ class SidesMaker {
         const sortedSquads = [...squads].sort((a, b) => b.slots - a.slots);
         const squadsMap : SquadsMap = new Map();
         const sortedIds : number[] = [];
-        const mltplr = Math.floor(slotsDiff * 1.5);
+        const mltplr = Math.floor(slotsDiff * 2);
         let totalSlots = 0;
         let smallestSquadSize = 1000;
         
