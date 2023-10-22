@@ -1,5 +1,5 @@
 import { SquadInfo } from "./squads-info";
-import { Roster, Rotation, SideInfo, Squad } from "./types";
+import { Roster, Rotation, Side, SideInfo, Squad } from "./types";
 
 let nextSquadId = 1;
 
@@ -57,4 +57,8 @@ export function getSquadIdsFromMask(mask: bigint) {
 export function calcDefaultHappiness(squads: Squad[]) {
     const totalSlots = squads.reduce((acc, squad) => acc + squad.slots, 0);
     return Math.round(((totalSlots / 4) / (totalSlots / squads.length)) * 1.2);
+}
+
+export function printTime(string: string, start: number) {
+    console.log(string, ((performance.now() - start) / 60000), 's');
 }

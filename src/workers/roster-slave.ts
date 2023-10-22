@@ -1,24 +1,26 @@
-import { ReadySide, RosterSlaveRequest, RosterSlaveResponse, Rotation, Side } from "../util/types";
+import { printTime } from "../util/helpers";
+import { Side, RosterSlaveRequest, RosterSlaveResponse, Rotation, } from "../util/types";
 
-let sides: ReadySide[];
+let slaveName: string;
+let sides: Side[];
 let allSquads: bigint;
 let limit: number;
-
-type RotationSideIndexes = number[];
-type Rotations = RotationSideIndexes[];
+let time: number;
 
 self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
     switch (data.command) {
-        case 'init':
+        case 'calculate':
             sides = data.sides;
             allSquads = data.allSquads;
             limit = data.limit;
-            break;
-        
-        case 'start':
+            slaveName = data.slaveName;
+            time = performance.now();
+
+            console.log(`Slave ${slaveName} receives a new batch: {sides: ${sides.length}, limit: ${limit}}`);
             startCombining();
+            printTime(`Slave ${slaveName} done in`, time);
+
             self.postMessage({status: 'done'} as RosterSlaveResponse);
-            self.close();
             break;
     }
 }
@@ -32,12 +34,12 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
     if (level < 0) {
         
         if (remainingSquads === BigInt(0))
-            return [[]] as Rotations;
+            return [[]];
         else
-            return [] as Rotations;
+            return [];
     }
 
-    const rotations : Rotations = [];
+    const rotations : Rotation[] = [];
 
     let roundCounter = (level === 3) ? limit : compIndexes.length;
 
@@ -45,10 +47,20 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
         const index = compIndexes.shift()!;
         const side = sides[index];
         const remSq = remainingSquads ^ side.squads;
-        const remInd = compIndexes.filter(i => (remSq & sides[i].squads) === sides[i].squads);
+        const remInd: number[] = [];
+        
+        for (let j = compIndexes.length - 1; j >= 0; j--) {
+            const compIndex = compIndexes[j];
+            const compSide = sides[compIndex];
+            if (compSide.squads > remSq)
+                break;
+            
+            if ((remSq & compSide.squads) === compSide.squads) 
+                remInd.unshift(compIndex);
+        }
 
         const rots = combineSides(remSq, remInd, level - 1)
-            .map(rot => ([...rot, index] as RotationSideIndexes))
+            .map(rot => ([...rot, side] as Rotation))
 
         if (level === 3) 
             rots.forEach(rot => announceRotation(rot));
@@ -62,12 +74,6 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
     return rotations;
 }
 
-function announceRotation(indexes: RotationSideIndexes) {
-    const rotation = getRotation(indexes);
+function announceRotation(rotation: Rotation) {
     self.postMessage({status: 'update', rotation} as RosterSlaveResponse);
-}
-
-function getRotation(indexes: RotationSideIndexes) {
-    return indexes.map(i => sides[i]);
-
 }

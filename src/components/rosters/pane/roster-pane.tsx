@@ -16,7 +16,6 @@ export default function RosterPane() {
     const [sidesMaker, setSidesMaker] = useState(() => new SidesMaker());
     const [rosterMaker, setRosterMaker] = useState(() => new RosterMaker());
     const {squads, ui} = useContext(StateContext).state;
-    console.log('RosterPane');
 
     const [status, setStatus] = useState<JSX.Element | null>(null);
     const [rosters, setRosters] = useState<Roster[]>([]);    

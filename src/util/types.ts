@@ -5,9 +5,8 @@ export type TagIdMap = Map<string|number, number|string>;
 export type SideInfo = {slots: number, squads: number[], happiness: number};
 export type Roster = SideInfo[];
 
-export type Side = {slots: number; squads: bigint};
-export type ReadySide = Side & {happiness: number};
-export type Rotation = ReadySide[];
+export type Side = {slots: number; squads: bigint, happiness: number};
+export type Rotation = Side[];
 export type SideMakerMemo = {[key: string]: Side[]};
 
 export type SidesMakerRequest = { 
@@ -17,11 +16,11 @@ export type SidesMakerRequest = {
     slotsDiff: number,
     squadHappy: number
 };
-export type SidesMakerResponse = {status: 'update', side: ReadySide} | {status: 'done'};
+export type SidesMakerResponse = {status: 'update', side: Side} | {status: 'done'};
 
 export type RosterMakerRequest = 
     {command: 'init', allSquads: bigint, slotsDiff: number} |
-    {command: 'update', side: ReadySide} |
+    {command: 'update', side: Side} |
     {command: 'start'} | 
     {command: 'terminate'};
 export type RosterMakerResponse = {status: 'starting', sidesLength: number} | 
@@ -31,16 +30,13 @@ export type RosterMakerResponse = {status: 'starting', sidesLength: number} |
     {status: 'slaves-terminated'};
 
 export type RosterSlaveRequest = {
-    command: 'init', 
-    sides: ReadySide[], 
+    command: 'calculate', 
+    slaveName: string,
+    sides: Side[], 
     allSquads: bigint,
     limit: number
-} | {
-    command: 'start'
-} | {
-    command: 'terminate'
 };
-export type RosterSlaveResponse = {status: 'update', rotation: ReadySide[]} | {status: 'done'};
+export type RosterSlaveResponse = {status: 'update', rotation: Side[]} | {status: 'done'};
 
 
 export type HappinessInfo = {tag: string, happy: string[], unhappy: string[], total: number};

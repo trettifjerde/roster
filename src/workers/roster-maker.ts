@@ -1,16 +1,18 @@
-import { getSquadIdsFromMask } from "../util/helpers";
-import { ReadySide, Roster, RosterMakerRequest, RosterMakerResponse, RosterSlaveRequest, RosterSlaveResponse, Rotation, SideInfo } from "../util/types";
+import { getSquadIdsFromMask, printTime } from "../util/helpers";
+import { Side, Roster, RosterMakerRequest, RosterMakerResponse, RosterSlaveRequest, RosterSlaveResponse, Rotation, SideInfo } from "../util/types";
 import SlaveWorker from './roster-slave?worker';
 
+type Batch = {sides: Side[], limit: number};
+
 const slaves: {[key: number]: Worker} = {};
-const SLAVES_PARTS = [8, 6.125, 4.29, 2.52, 1];
+const SLAVES_NUM = 5;
 
 let sideSet : Set<bigint>;
-let sides : ReadySide[];
+let sides : Side[];
 let allSquads: bigint;
 let slotsDiff: number;
-let slaveDone: number;
 let time : number;
+let batches : Batch[];
 
 self.onmessage = ({data}: {data: RosterMakerRequest}) => {
     switch (data.command) {
@@ -19,7 +21,7 @@ self.onmessage = ({data}: {data: RosterMakerRequest}) => {
             sides = [];
             allSquads = data.allSquads;
             slotsDiff = data.slotsDiff;
-            slaveDone = 0;
+            batches = [];
             break;
 
         case 'update':
@@ -45,24 +47,32 @@ self.onmessage = ({data}: {data: RosterMakerRequest}) => {
     }
 }
 
-function getBatches() {
-    const batches : {sides: ReadySide[], limit: number}[] = [];
-    
-    for (let i = 0; i < SLAVES_PARTS.length; i++) {
-        const batch : {sides: ReadySide[], limit: number} = {
-            sides: [...sides], 
-            limit: Math.round(sides.length / SLAVES_PARTS[i])
-        };
-        batches.push(batch);
-        sides = sides.slice(batch.limit);
+function makeBatches() {
+    sides.sort((a, b) => (b.squads - a.squads > 1)? 1 : -1);
+    const stop = (allSquads + BigInt(1)) / BigInt(2);
+
+    while ((sides.length > 0) && (sides[0].squads > stop)) {
+        const prevBatch = batches[batches.length - 1];
+        const limit = prevBatch ? calcLimit(prevBatch) : Math.round(sides.length * 0.02);
+
+        batches.push({
+            sides: [...sides],
+            limit
+        });
+
+        sides = sides.slice(limit);  
     }
-    return batches;
+    console.log(batches);
+}
+
+function calcLimit(prevBatch: Batch) {
+    return Math.min(Math.round((prevBatch.sides.length / sides.length) * prevBatch.limit), sides.length);
 }
 
 function startCombining() {
-    const batches = getBatches();
+    makeBatches();
 
-    for (let i = 0; i < batches.length; i++) {
+    for (let i = 0; i < SLAVES_NUM; i++) {
         const worker = new SlaveWorker();
 
         worker.onmessage = (e: {data: RosterSlaveResponse}) => {
@@ -78,34 +88,46 @@ function startCombining() {
                     break;
 
                 case 'done':
-                    slaveDone++;
-                    console.log('Slave', i, 'done');
-                    delete slaves[i];
+                    if (batches.length > 0) 
+                        feedNewBatchTo(worker, i.toString());
+                    
+                    else {
+                        console.log('No more batches. Terminating slave', i);
+                        worker.terminate();
+                        delete slaves[i];
 
-                    if (slaveDone === batches.length) {
-                        console.log('slaves ready in', ((performance.now() - time) / (60 * 1000)));
-                        self.postMessage({status: 'done'} as RosterMakerResponse)
+                        if (Object.keys(slaves).length === 0) {
+                            printTime('RosterMaker done in', time);
+                            self.postMessage({status: 'done'} as RosterMakerResponse);
+                        }
                     }
                     break;
             }           
 
         };
 
-        worker.postMessage({
-            command: 'init', 
-            limit: batches[i].limit,
-            sides: batches[i].sides, 
-            allSquads
-        } as RosterSlaveRequest);
-
         slaves[i] = worker;
     }
 
     time = performance.now();
-    
-    for (const worker of Object.values(slaves)) {
-        worker.postMessage({command: 'start'} as RosterSlaveRequest);
+
+    for (const [name, worker] of Object.entries(slaves)) {
+        if (batches.length > 0) {
+            feedNewBatchTo(worker, name);
+        }
     }
+}
+
+function feedNewBatchTo(slave: Worker, name: string) {
+    const batch = batches.shift()!;
+
+    slave.postMessage({
+        command: 'calculate',
+        slaveName: name,
+        limit: batch.limit,
+        sides: batch.sides,
+        allSquads
+    } as RosterSlaveRequest);
 }
 
 function isValidRoster(rot: Rotation) {
@@ -119,7 +141,7 @@ function isValidRoster(rot: Rotation) {
     return sorted.map(side => buildSide(side)) as Roster;
 }
 
-function buildSide(side: ReadySide) {
+function buildSide(side: Side) {
     return {
         squads: getSquadIdsFromMask(side.squads),
         slots: side.slots, 
