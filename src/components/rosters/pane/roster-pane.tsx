@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
 
 import RosterGrid from "../grid/rosters-grid";
@@ -10,7 +10,7 @@ import styles from './pane.module.scss';
 import RosterForm from "../form/roster-form";
 import Header from "../header/header";
 
-export type CalculationParams = {slots: number, squad: number, side: number};
+export type CalculationParams = {slots: number, happiness: number};
 
 export default function RosterPane() {
     const [sidesMaker, setSidesMaker] = useState(() => new SidesMaker());
@@ -18,10 +18,12 @@ export default function RosterPane() {
     const {squads, ui} = useContext(StateContext).state;
 
     const [status, setStatus] = useState<JSX.Element | null>(null);
-    const [rosters, setRosters] = useState<Roster[]>([]);    
+    const [rosters, setRosters] = useState<Roster[]>([]);
+    const [isNotFound, setIfNotFound] = useState(false); 
 
-    const startCalculating = useCallback(({slots, side, squad} : CalculationParams) => {
+    const startCalculating = useCallback(({slots, happiness} : CalculationParams) => {
         setRosters([]);
+
         const allSquads = squads.reduce((acc, squad) => acc + BigInt(squad.id), BigInt(0));
 
         sidesMaker.onmessage = (e : {data: SidesMakerResponse}) => {
@@ -48,9 +50,11 @@ export default function RosterPane() {
                     break;
                 case 'update':
                     setRosters(prev => [...prev, data.roster]);
+                    setStatus(ui.calculations.rostersFound(data.totalRosters));
                     break;
                 case 'done':
                     setStatus(null);
+                    setIfNotFound(true);
                     break;
                 case 'slaves-terminated':
                     rosterMaker.terminate();
@@ -67,10 +71,10 @@ export default function RosterPane() {
         sidesMaker.postMessage({
             command: 'init',
             squads, 
-            sideHappy: side,
-            squadHappy: squad,
+            sideHappy: happiness,
             slotsDiff: slots
         } as SidesMakerRequest);        
+        
     }, [squads, rosterMaker, sidesMaker, ui]);
 
     const abortCalculating = () => {
@@ -86,7 +90,7 @@ export default function RosterPane() {
     return <div className={styles.pane}>
         <Header />
         <RosterForm startCalculating={startCalculating} />
-        <RosterGrid header={ui.common.rosters} rosters={rosters} empty={ui.rosters.empty} />
+        <RosterGrid header={ui.common.rosters} rosters={rosters} empty={isNotFound ? ui.rosters.notFound : ui.rosters.empty} />
         {status && <Spinner text={ui.calculations.thisMightTake} status={status} abortText={ui.calculations.abortText} 
             abort={abortCalculating}/>}
     </div>

@@ -9,6 +9,7 @@ const SLAVES_NUM = 5;
 
 let sideSet : Set<bigint>;
 let sides : Side[];
+let totalRosters: number;
 let allSquads: bigint;
 let slotsDiff: number;
 let time : number;
@@ -19,6 +20,7 @@ self.onmessage = ({data}: {data: RosterMakerRequest}) => {
         case 'init':
             sideSet = new Set();
             sides = [];
+            totalRosters = 0;
             allSquads = data.allSquads;
             slotsDiff = data.slotsDiff;
             batches = [];
@@ -49,24 +51,24 @@ self.onmessage = ({data}: {data: RosterMakerRequest}) => {
 
 function makeBatches() {
     sides.sort((a, b) => (b.squads - a.squads > 1)? 1 : -1);
-    const stop = (allSquads + BigInt(1)) / BigInt(2);
+    const biggestId = (allSquads + BigInt(1)) / BigInt(2);
+    let sidesToHandle = sides.findIndex(s => s.squads < biggestId);
 
-    while ((sides.length > 0) && (sides[0].squads > stop)) {
+    while (sides.length > 0 && sidesToHandle > 0) {
         const prevBatch = batches[batches.length - 1];
-        const limit = prevBatch ? calcLimit(prevBatch) : Math.round(sides.length * 0.02);
+        const limit = prevBatch ? calcLimit(prevBatch, sidesToHandle) : Math.round(sides.length * 0.01);
+        const batch : Batch = {sides: [...sides], limit};
 
-        batches.push({
-            sides: [...sides],
-            limit
-        });
+        batches.push(batch);
 
-        sides = sides.slice(limit);  
+        sides = sides.slice(limit);
+        sidesToHandle -= limit;  
     }
     console.log(batches);
 }
 
-function calcLimit(prevBatch: Batch) {
-    return Math.min(Math.round((prevBatch.sides.length / sides.length) * prevBatch.limit), sides.length);
+function calcLimit(prevBatch: Batch, sidesToHandle: number) {
+    return Math.min(sidesToHandle, Math.round((prevBatch.sides.length / sides.length) * prevBatch.limit), sides.length);
 }
 
 function startCombining() {
@@ -81,8 +83,10 @@ function startCombining() {
             switch (data.status) {
                 case 'update':
                     const roster = isValidRoster(data.rotation);
-                    if (roster)
-                        self.postMessage({status: 'update', roster} as RosterMakerResponse);
+                    if (roster) {
+                        totalRosters++;
+                        self.postMessage({status: 'update', roster, totalRosters} as RosterMakerResponse);
+                    }
                     else 
                         console.log(data.rotation, 'from slave', i, 'has failed slots diff test');
                     break;

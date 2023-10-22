@@ -24,7 +24,7 @@ export type RosterMakerRequest =
     {command: 'start'} | 
     {command: 'terminate'};
 export type RosterMakerResponse = {status: 'starting', sidesLength: number} | 
-    {status: 'update', roster: Roster} | 
+    {status: 'update', roster: Roster, totalRosters: number} | 
     {status: 'announce-side', sidesLength: number} |
     {status: 'done'} |
     {status: 'slaves-terminated'};

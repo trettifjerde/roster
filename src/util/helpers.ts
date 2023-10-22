@@ -60,5 +60,5 @@ export function calcDefaultHappiness(squads: Squad[]) {
 }
 
 export function printTime(string: string, start: number) {
-    console.log(string, ((performance.now() - start) / 60000), 's');
+    console.log(string, ((performance.now() - start) / 60000).toFixed(2), 'm');
 }

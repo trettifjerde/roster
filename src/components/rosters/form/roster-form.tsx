@@ -1,4 +1,4 @@
-import { ChangeEventHandler, memo, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { ChangeEventHandler, memo, useContext, useEffect, useRef, useState } from 'react';
 import formStyles from '../../ui/form.module.scss';
 import styles from './form.module.scss';
 import Button from '../../ui/button';
@@ -40,7 +40,7 @@ function RosterForm({startCalculating}: {
 
         if (ref.current) {
 
-            const params : CalculationParams = {slots: 0, side: 0, squad: 0};
+            const params : CalculationParams = {slots: 0, happiness: 0};
 
             for (const key of Object.keys(FORM) as InputName[]) {
                 const {val, err} = cleanOrGetError(ui.rosterForm, key, ref.current[key].value);
@@ -63,7 +63,7 @@ function RosterForm({startCalculating}: {
 
             for (const [key, value] of Object.entries(FORM)) {
                 cleanError(ref.current[key]);
-                if (key !== 'side') {
+                if (key !== 'happiness') {
                     ref.current[key].value = value.defaultValue;
                 }
                 else {
@@ -97,7 +97,7 @@ function RosterForm({startCalculating}: {
 
     useEffect(() => {
         if (ref.current) {
-            ref.current['side'].value = defaultHappiness;
+            ref.current['happiness'].value = defaultHappiness;
         }
     }, [ref, defaultHappiness]);
 
@@ -128,16 +128,11 @@ export const FORM = {
         min: 0,
         max: 4,
     },
-    side: {
+    happiness: {
         defaultValue: null,
         min: 0,
         max: 20,
     },
-    squad: {
-        defaultValue: -1,
-        min: -6,
-        max: 5,
-    }
 }
 
 export type InputName = keyof typeof FORM;

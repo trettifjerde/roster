@@ -13,8 +13,9 @@ export const translations = {
         },
         calculations: {
             thisMightTake: 'This might take some time. Keep the tab open and go get some tea.',
-            makingSides(n: number) {return <><p>Calculating possible sides...</p><p>Found sides count: {n}</p></>},
+            makingSides(n: number) {return <><p>Calculating possible sides...</p><p>Sides found: {n}</p></>},
             sidesFound(n: number) { return <><p>{n} possible sides found.</p><p>Calculating rosters...</p></>},
+            rostersFound(n: number) {return <><p>Calculating rosters...</p><p>Rosters found: {n}</p></>},
             abortText: 'Abort'
         },
         rosterForm: {
@@ -22,14 +23,10 @@ export const translations = {
                 label: 'Max. side slot difference',
                 description: 'Acceptable difference between side slots on one server'
             },
-            side: {
+            happiness: {
                 label: 'Min. side happiness',
                 description: 'To exclude sides with total squad happiness lower than specified'
             },
-            squad: {
-                label: 'Min. squad happiness',
-                description: 'To exlude sides where at least one squad has lower happiness level than specified'
-            }
         },
         common: {
             slots: 'Slots',
@@ -41,7 +38,8 @@ export const translations = {
         rosters: {
             empty: 'No rosters',
             happy: 'Happy',
-            unhappy: 'Unhappy'
+            unhappy: 'Unhappy',
+            notFound: 'Rosters not found. Try lowering happiness level or allowing higher slot difference.'
         },
         squadGrid: {
             tag: 'Tag',
@@ -75,8 +73,9 @@ export const translations = {
         },
         calculations: {
             thisMightTake: 'Это займет некоторое время. Оставьте вкладку открытой и занимайтесь своими делами.',
-            makingSides(n: number) {return <><p>Вычисляем оптимальные стороны...</p><p>Пока что найдено сторон: {n}</p></>},
-            sidesFound(n: number) {return <><p>Найдено {n} возможных сторон.</p><p>Составляем ротации...</p></>},
+            makingSides(n: number) {return <><p>Составляем стороны по введенным условиям...</p><p>Найдено сторон: {n}</p></>},
+            sidesFound(n: number) {return <><p>Найдено {n} сторон с указанным уровнем счастья.</p><p>Составляем ротации...</p></>},
+            rostersFound(n: number) {return <><p>Составляем ротации...</p><p>Найдено ротаций: {n}</p></>},
             abortText: 'Прервать'
         },
         rosterForm: {
@@ -84,13 +83,9 @@ export const translations = {
                 label: 'Макс. разница слотов',
                 description: 'Допустимая разница в слотах между сторонами на одном сервере'
             },
-            side: {
+            happiness: {
                 label: 'Мин. счастье стороны',
                 description: 'Чтобы исключить стороны, где суммарный уровень счастья отрядов ниже указанного'
-            },
-            squad: {
-                label: 'Мин. счастье отряда',
-                description: 'Чтобы исключить стороны, где уровень счастья хотя бы одного отряда меньше указанного'
             }
         },
         common: {
@@ -103,7 +98,8 @@ export const translations = {
         rosters: {
             empty: 'Нет ротаций',
             happy: 'Рады',
-            unhappy: 'Не рады'
+            unhappy: 'Не рады',
+            notFound: 'Ротации не найдены. Попробуйте снизить уровень счастья или разрешить большую разницу слотов.'
         },
         squadGrid: {
             tag: 'Тэг',
