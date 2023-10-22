@@ -7,7 +7,6 @@ import { Language } from "../../../store/translations";
 
 function Header() {
     const {state, dispatch} = useContext(StateContext);
-    console.log('Header');
 
     const switchLang = () => {
         dispatch(new SwitchLanguage(state.ui.lang as Language));
