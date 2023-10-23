@@ -53,7 +53,7 @@ export default function SquadsPane() {
             setApplyNewSquads(() => (e: MouseEvent) => setNewSquadInfo(data));
         }
         
-    }, [importRef, dispatch, clearFiles, setApplyNewSquads, setImportConfirmation]);
+    }, [importRef, ui, dispatch, clearFiles, setApplyNewSquads, setImportConfirmation]);
 
     const setNewSquadInfo = useCallback((data: SquadsData) => {
         dispatch(new UploadSquads(
