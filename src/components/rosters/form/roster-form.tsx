@@ -2,22 +2,23 @@ import { ChangeEventHandler, memo, useContext, useEffect, useRef, useState } fro
 import formStyles from '../../ui/form.module.scss';
 import styles from './form.module.scss';
 import Button from '../../ui/button';
-import { CalculationParams } from '../pane/roster-pane';
 import { StateContext } from '../../../store/context';
 import { translations } from '../../../store/translations';
+import { CalculationParams, FormValues } from '../../../util/types';
+import { calcDefaultFormParams } from '../../../util/helpers';
 
-function cleanOrGetError(ui: typeof translations.en.rosterForm | typeof translations.ru.rosterForm, key: InputName, v: string) {
+function cleanOrGetError(ui: typeof translations.en.rosterForm, formValues: FormValues, key: keyof FormValues, v: string) {
     const value = +v;
-    const info = FORM[key];
+    const info = formValues[key];
 
     try {
 
         if (!v || isNaN(value)) {
-            throw new TypeError(`Invalid ${ui[key].label.toLowerCase()}`);
+            throw new TypeError(ui[key].invalid);
         }
 
         if (value < info.min || value > info.max) 
-            throw new RangeError(`${ui[key].label.toLowerCase()} must be between ${info.min} and ${info.max}`);
+            throw new RangeError(ui.rangeError(ui[key].label, info.min, info.max))
 
         return {val: value, err: ''}
     }
@@ -25,16 +26,23 @@ function cleanOrGetError(ui: typeof translations.en.rosterForm | typeof translat
         if (err instanceof RangeError || err instanceof TypeError) 
             return {val: null, err: err.message};
         else
-            return {val: null, err: 'Unknown error occurred'};
+            return {val: null, err: ui.unknownError};
     }
 }
 
 function RosterForm({startCalculating}: {
     startCalculating: (p: CalculationParams) => void
 }) {
-    const {ui, defaultHappiness} = useContext(StateContext).state;
+    const {squads, ui} = useContext(StateContext).state;
     const [error, setError] = useState('');
     const ref = useRef<HTMLFormElement>(null);
+    const [formValues, setFormValues] = useState<FormValues>(calcDefaultFormParams(squads));
+
+    useEffect(() => {setFormValues(calcDefaultFormParams(squads))}, [squads, setFormValues]);
+
+    useEffect(() => {
+        setDefault();
+    }, [formValues, ref]);
 
     const validateForm = () => {
 
@@ -42,8 +50,8 @@ function RosterForm({startCalculating}: {
 
             const params : CalculationParams = {slots: 0, happiness: 0};
 
-            for (const key of Object.keys(FORM) as InputName[]) {
-                const {val, err} = cleanOrGetError(ui.rosterForm, key, ref.current[key].value);
+            for (const key of Object.keys(formValues) as (keyof FormValues)[]) {
+                const {val, err} = cleanOrGetError(ui.rosterForm, formValues, key, ref.current[key].value);
                 
                 if (val) {
                     params[key] = val;
@@ -60,24 +68,18 @@ function RosterForm({startCalculating}: {
 
     const setDefault = () => {
         if (ref.current) {
-
-            for (const [key, value] of Object.entries(FORM)) {
+            for (const [key, value] of Object.entries(formValues)) {
                 cleanError(ref.current[key]);
-                if (key !== 'happiness') {
                     ref.current[key].value = value.defaultValue;
-                }
-                else {
-                    ref.current[key].value = defaultHappiness;
-                }
             }
         }
     }
 
     const validateValue : ChangeEventHandler<HTMLInputElement> = (e) => {
-        const key = e.target.name as InputName;
+        const key = e.target.name as keyof FormValues;
         const v = e.target.value;
 
-        const {err} = cleanOrGetError(ui.rosterForm, key, v);
+        const {err} = cleanOrGetError(ui.rosterForm, formValues, key, v);
 
         if (err) 
             markError(e.target, err);
@@ -95,25 +97,26 @@ function RosterForm({startCalculating}: {
         setError(err);
     }
 
-    useEffect(() => {
-        if (ref.current) {
-            ref.current['happiness'].value = defaultHappiness;
-        }
-    }, [ref, defaultHappiness]);
-
     return <form className={`${formStyles.form} ${styles.form}`} ref={ref}
         onSubmit={(e) => e.preventDefault()}>
         <p className={formStyles.err}>{error}</p>
         <div>
-            {Object.entries(FORM).map(([key, value]) => <div className={styles.lblcont} key={key}>
-                <label>{ui.rosterForm[key as InputName].label}
-                    <input name={key} min={value.min} max={value.max} step="1" 
-                        defaultValue={value.defaultValue === null ? defaultHappiness : value.defaultValue} onChange={validateValue} onFocus={(e) => cleanError(e.target)} />
+            <div className={styles.lblcont}>
+                <label>{ui.rosterForm.slots.label}
+                    <input name="slots" step="1" min={formValues.slots.min} max={formValues.slots.max}
+                        defaultValue={formValues.slots.defaultValue} onChange={validateValue} onFocus={(e) => cleanError(e.target)} />
                 </label>
-                <div className='note'>{ui.rosterForm[key as InputName].description}</div>
-            </div>)}
+                <div className='note'>{ui.rosterForm.slots.description}</div>
+            </div>
+            <div className={styles.lblcont}>
+                <label>{ui.rosterForm.happiness.label}
+                    <input name="happiness" step="1" min={formValues.happiness.min} max={formValues.happiness.max}
+                        defaultValue={formValues.happiness.defaultValue} onChange={validateValue} onFocus={(e) => cleanError(e.target)} />
+                </label>
+                <div className='note'>{ui.rosterForm.happiness.description}</div>
+            </div>
         </div>
-        <div className={formStyles.btncont}>
+        <div className="btncont">
             <Button onClick={validateForm}>{ui.btns.formRoster}</Button>
             <Button onClick={setDefault}>{ui.btns.setDefault}</Button>
         </div>
@@ -121,18 +124,3 @@ function RosterForm({startCalculating}: {
 }
 
 export default memo(RosterForm);
-
-export const FORM = {
-    slots: {
-        defaultValue: 2,
-        min: 0,
-        max: 4,
-    },
-    happiness: {
-        defaultValue: null,
-        min: 0,
-        max: 20,
-    },
-}
-
-export type InputName = keyof typeof FORM;

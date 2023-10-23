@@ -1,38 +1,17 @@
-import { calcDefaultHappiness, makeSquadFromForm, makeSquadFromSquadInfo } from "../util/helpers"
+import { makeSquadFromForm, makeSquadsFromSquadInfo, sortSquads, } from "../util/helpers"
 import { SQUADS_INFO } from "../util/squads-info"
-import { Squad, SquadsMap, TagIdMap } from "../util/types"
+import { Squad } from "../util/types"
 import { Language, translations } from "./translations";
 import * as a from "./actions"
 
-function sortSquads(squads: Squad[]) {
-    return squads.sort((a, b) => a.tag.toUpperCase() > b.tag.toUpperCase() ? 1 : -1);
-}
 
 export function initStateMaker() {
     const language = (localStorage.getItem('lang') || 'en') as Language;
 
     const ui = translations[language];
-    const squads: Squad[] = [];
-    const tagIdMap : TagIdMap = new Map();
+    const {squads, tagIdMap, nextId} = makeSquadsFromSquadInfo(SQUADS_INFO)
 
-    for (const info of SQUADS_INFO) {
-        const squad = makeSquadFromSquadInfo(info);
-        squads.push(squad);
-        tagIdMap.set(squad.tag, squad.id);
-        tagIdMap.set(squad.id, squad.tag);
-    }
-
-    for (let i = 0; i < squads.length; i++) {
-        const squad = squads[i];
-        const info = SQUADS_INFO[i];
-        squad.with = new Set(info.with.map(tag => tagIdMap.get(tag) as number));
-        squad.without = new Set(info.without.map(tag => tagIdMap.get(tag) as number));
-    }
-
-    sortSquads(squads);
-    const defaultHappiness = calcDefaultHappiness(squads);
-
-    return {squads, tagIdMap, ui, defaultHappiness};
+    return {squads, tagIdMap, ui, nextId};
 }
 export type State = ReturnType<typeof initStateMaker>;
 
@@ -41,13 +20,13 @@ export function reducer(state: State, action: a.Action) : State {
 
     switch (action.type) {
         case a.ADD_SQUAD:
-            const squad = makeSquadFromForm(action.info);
+            const squad = makeSquadFromForm(action.info, state.nextId);
             squads = sortSquads([...state.squads, squad]);
             return {
                 ...state,
                 squads,
+                nextId: state.nextId * 2,
                 tagIdMap: new Map(state.tagIdMap).set(squad.tag, squad.id).set(squad.id, squad.tag),
-                defaultHappiness: calcDefaultHappiness(squads)
             }
 
         case a.UPDATE_SQUAD:
@@ -56,7 +35,6 @@ export function reducer(state: State, action: a.Action) : State {
             const updState = {
                 ...state,
                 squads,
-                defaultHappiness: calcDefaultHappiness(squads)
             };
 
             const oldTag = state.tagIdMap.get(action.info.id) as string;
@@ -94,14 +72,21 @@ export function reducer(state: State, action: a.Action) : State {
 
             return {
                 ...state,
-                squads,
-                defaultHappiness: calcDefaultHappiness(squads)
+                squads
             }
 
         case a.SWITCH_LANGUAGE:
             return {
                 ...state,
                 ui: translations[action.lang]
+            }
+
+        case a.UPLOAD_SQUADS:
+            return {
+                ...state,
+                squads: action.squads,
+                tagIdMap: action.tagIdMap, 
+                nextId: action.nextId
             }
 
         default:

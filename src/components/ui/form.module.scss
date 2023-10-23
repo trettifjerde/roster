@@ -1,19 +1,18 @@
 @use '../../styles/variables' as *;
 
 .form {
-    width: fit-content;
     text-align: center;
 
     label {
         line-height: 2;
     }
 
-    button {
-        margin: $gap-def;
+    input {
+        background-color: $primary-hover;
     }
 
-    input {
-        background-color: $pale;
+    p {
+        margin-block: $gap-def;
     }
 }
 
@@ -36,11 +35,6 @@
     input {
         width: 100%;
     }
-}
-
-.btncont {
-    margin-top: $gap-m;
-    margin-inline: auto;
 }
 
 .invalid {

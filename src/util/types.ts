@@ -3,7 +3,21 @@ export type SquadsMap = Map<number, Squad>;
 export type TagIdMap = Map<string|number, number|string>;
 
 export type SideInfo = {slots: number, squads: number[], happiness: number};
-export type Roster = SideInfo[];
+export type Roster = {id: number, roster: SideInfo[], totalHappiness: number};
+
+export type CalculationParams = {slots: number, happiness: number};
+export type FormValues = {
+    slots: {
+        defaultValue: number,
+        min: number,
+        max: number,
+    },
+    happiness: {
+        defaultValue: number,
+        min: number,
+        max: number,
+    },
+}
 
 export type Side = {slots: number; squads: bigint, happiness: number};
 export type Rotation = Side[];
@@ -24,7 +38,7 @@ export type RosterMakerRequest =
     {command: 'start'} | 
     {command: 'terminate'};
 export type RosterMakerResponse = {status: 'starting', sidesLength: number} | 
-    {status: 'update', roster: Roster, totalRosters: number} | 
+    {status: 'update', roster: Roster} | 
     {status: 'announce-side', sidesLength: number} |
     {status: 'done'} |
     {status: 'slaves-terminated'};
@@ -33,6 +47,7 @@ export type RosterSlaveRequest = {
     command: 'calculate', 
     slaveName: string,
     sides: Side[], 
+    slotsDiff: number,
     allSquads: bigint,
     limit: number
 };

@@ -1,10 +1,11 @@
-import { Squad } from "../util/types";
+import { Squad, TagIdMap } from "../util/types";
 import { Language } from "./translations";
 
 export const ADD_SQUAD = 'ADD_SQUAD';
 export const DELETE_SQUAD = 'DELETE_SQUAD';
 export const UPDATE_SQUAD = 'UPDATE_SQUAD';
 export const SWITCH_LANGUAGE = 'SWITCH_LANGUAGE';
+export const UPLOAD_SQUADS = 'UPLOAD_SQUADS';
 
 export class AddSquad {
     public readonly type = ADD_SQUAD;
@@ -26,4 +27,13 @@ export class SwitchLanguage {
     constructor(public lang: Language) {}
 }
 
-export type Action = AddSquad | UpdateSquad | DeleteSquad | SwitchLanguage;
+export class UploadSquads {
+    public readonly type = UPLOAD_SQUADS;
+    constructor(
+        public squads: Squad[], 
+        public tagIdMap: TagIdMap, 
+        public nextId: number
+    ) {}
+}
+
+export type Action = AddSquad | UpdateSquad | DeleteSquad | SwitchLanguage | UploadSquads;

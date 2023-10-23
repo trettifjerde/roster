@@ -1,4 +1,4 @@
-import { FormEventHandler, MouseEventHandler, useCallback, useContext, useState } from 'react';
+import { FormEventHandler, MouseEventHandler, Ref, forwardRef, memo, useCallback, useContext, useState } from 'react';
 import {motion} from 'framer-motion';
 import { AddSquad, DeleteSquad, UpdateSquad } from '../../../store/actions';
 import { StateContext } from '../../../store/context';
@@ -7,7 +7,7 @@ import Button from '../../ui/button';
 import styles from './form.module.scss';
 import formStyles from '../../ui/form.module.scss';
 
-export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleForm: MouseEventHandler}) {
+function SquadForm({squad, toggleForm}: {squad?: Squad, toggleForm: MouseEventHandler}, ref: Ref<HTMLFormElement>|null) {
     const {state, dispatch} = useContext(StateContext);
     const {squads, ui} = state;
     const [error, setError] = useState('');
@@ -55,12 +55,12 @@ export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleFor
             dispatch(new DeleteSquad(squad.id))
     }, [squad, dispatch]);
 
-    return <motion.form layout 
+    return <motion.form layout ref={ref}
         initial={{opacity: 0, y: 100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -100}}
             className={formStyles.form} onSubmit={blockSubmit} onClickCapture={clearError}>
         <p className={formStyles.err}>{error}</p>
         <div className={formStyles.cont}>
-            <label>{ui.squadGrid.tag}</label>
+            <label>{ui.squadsForm.tag}</label>
             <input name="tag" type='text' defaultValue={squad ? squad.tag : ''} />
         </div>
         <div className={formStyles.cont}>
@@ -68,21 +68,24 @@ export default function SquadForm({squad, toggleForm}: {squad?: Squad, toggleFor
             <input name="slots" type='number' min={0} defaultValue={squad ? squad.slots : 0}/>
         </div>
 
-        {squad && !deleteMode && <Button onClick={toggleDeleteSquad}>{ui.squadGrid.deleteSquad}</Button>}
-        {squad && deleteMode && <div className={formStyles.btncont}>
-            <div>{ui.squadGrid.deleteSquad}?</div>
-            <Button onClick={deleteSquad}>{ui.btns.yes}</Button>
-            <Button onClick={toggleDeleteSquad}>{ui.btns.cancel}</Button>
+        {squad && <div className='btncont'>
+            {!deleteMode && <Button onClick={toggleDeleteSquad}>{ui.squadsForm.deleteSquad}</Button>}
+            {deleteMode && <>
+                <p>{ui.squadsForm.deleteSquad}?</p>
+                <Button onClick={deleteSquad}>{ui.common.yes}</Button>
+                <Button onClick={toggleDeleteSquad}>{ui.common.cancel}</Button>
+            </>}
         </div>}
 
-        <SquadPrefsForm prefs={ui.squadGrid.preferences} squad={squad} squads={squads}/>
-        <div className={formStyles.btncont}>
-            <Button onClick={validateForm}>{ui.btns.save}</Button>
-            <Button onClick={toggleForm}>{ui.btns.cancel}</Button>
+        <SquadPrefsForm prefs={ui.squadsForm.preferences} squad={squad} squads={squads}/>
+        <div className="btncont">
+            <Button onClick={validateForm}>{ui.common.save}</Button>
+            <Button onClick={toggleForm}>{ui.common.cancel}</Button>
         </div>
     </motion.form>
-    
 }
+
+export default memo(forwardRef(SquadForm));
 
 function SquadPrefsForm({prefs, squad, squads}: {prefs: string, squad?: Squad, squads: Squad[]}) {
 

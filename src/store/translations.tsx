@@ -21,19 +21,26 @@ export const translations = {
         rosterForm: {
             slots: {
                 label: 'Max. side slot difference',
-                description: 'Acceptable difference between side slots on one server'
+                description: 'Acceptable difference between side slots on one server',
+                invalid: 'Invalid slot difference'
             },
             happiness: {
                 label: 'Min. side happiness',
-                description: 'To exclude sides with total squad happiness lower than specified'
+                description: 'To exclude sides with total squad happiness lower than specified',
+                invalid: 'Invalid side happiness'
             },
+            rangeError(label: string, min: number, max: number) {return min === max ? `${label} fore these squads = ${min}` : 
+            `${label} for these squads: ${min} <= x <= ${max}`},
+            unknownError: 'Unknown error'
         },
         common: {
             slots: 'Slots',
             squads: 'Squads',
             happiness: 'Happiness',
-            rosters: 'Rosters'
-
+            rosters: 'Rosters',
+            yes: 'Yes',
+            cancel: 'Cancel',
+            save: 'Save',
         },
         rosters: {
             empty: 'No rosters',
@@ -41,22 +48,30 @@ export const translations = {
             unhappy: 'Unhappy',
             notFound: 'Rosters not found. Try lowering happiness level or allowing higher slot difference.'
         },
-        squadGrid: {
+        squads: {
+            newSquad: 'new squad',
+            fileError: 'Unable to read the file. Please, download the default squads to see how data should be structured in order to be read.',
+            importConfHeader: 'Attention',
+            importConfBody: <><p>The information from the file will completely rewrite the current squads info in the application. If you do not want to lose the current squads info, click "Cancel" and "Export squads info" first.</p>
+                <br/><p>Do you want to upload your file to the app now?</p>
+            </>
+        },
+        squadsForm: {
             tag: 'Tag',
             deleteSquad: 'Delete squad',
             preferences: 'Preferences',
+        },
+        squadItem: {
             with: 'With',
             without: 'Without',
+            edit: 'Edit',
         },
         btns: {
             formRoster: 'Form roster',
-            yes: 'Yes',
-            cancel: 'Cancel',
-            save: 'Save',
-            edit: 'Edit',
-            addSquad :'Add squad',
             collapseSquads: 'Collapse squads',
-            setDefault: 'Set default values'
+            setDefault: 'Set default values',
+            export: 'Export squads info',
+            import: 'Upload squads info'
         }
     },
     ru: {
@@ -81,19 +96,26 @@ export const translations = {
         rosterForm: {
             slots: {
                 label: 'Макс. разница слотов',
-                description: 'Допустимая разница в слотах между сторонами на одном сервере'
+                description: 'Допустимая разница в слотах между сторонами на одном сервере',
+                invalid: 'Недопустимое значение разницы слотов'
             },
             happiness: {
                 label: 'Мин. счастье стороны',
-                description: 'Чтобы исключить стороны, где суммарный уровень счастья отрядов ниже указанного'
-            }
+                description: 'Чтобы исключить стороны, где суммарный уровень счастья отрядов ниже указанного',
+                invalid: 'Недопустимое значение мин. счастья',
+            },
+            rangeError(label: string, min: number, max: number) {return min === max ? `${label} для этих отрядов = ${min}` : 
+            `${label} для этих отрядов: ${min} <= x <= ${max}`},
+            unknownError: 'Неизвестная ошибка'
         },
         common: {
             slots: 'Слоты',
             squads: 'Отряды',
             happiness: 'Счастье',
-            rosters: 'Ротации'
-
+            rosters: 'Ротации',
+            yes: 'Да',
+            cancel: 'Отмена',
+            save: 'Сохранить',
         },
         rosters: {
             empty: 'Нет ротаций',
@@ -101,22 +123,30 @@ export const translations = {
             unhappy: 'Не рады',
             notFound: 'Ротации не найдены. Попробуйте снизить уровень счастья или разрешить большую разницу слотов.'
         },
-        squadGrid: {
+        squads: {
+            newSquad: 'новый отряд',
+            fileError: 'Файл не соответствует формату. Скачайте дефолтные отряды и посмотрите, каким должен быть формат.',
+            importConfHeader: 'Внимание',
+            importConfBody: <><p>Отряды из загруженного файла полностью перезапишут собой отряды в приложении. Если вы не хотите потерять текущую информацию, нажмите "Отмена" и "Скачать отряды", а потом повторите импорт.</p>
+                <br/><p>Импортировать отряды из файла сейчас?</p>
+            </>
+        },
+        squadsForm: {
             tag: 'Тэг',
             deleteSquad: 'Удалить отряд',
             preferences: 'Предпочтения',
+        },
+        squadItem: {
+            edit: 'Изменить',
             with: 'Вместе с',
             without: 'Без',
         },
         btns: {
             formRoster: 'Найти ротации',
-            yes: 'Да',
-            cancel: 'Отмена',
-            save: 'Сохранить',
-            edit: 'Изменить',
-            addSquad :'Добавить отряд',
             collapseSquads: 'Свернуть все отряды',
-            setDefault: 'Поставить по умолчанию'
+            setDefault: 'Поставить по умолчанию',
+            export: 'Скачать отряды',
+            import: 'Импортировать отряды'
         }
     }
 }

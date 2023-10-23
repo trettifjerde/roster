@@ -1,12 +1,7 @@
 import { SquadInfo } from "./squads-info";
-import { Roster, Rotation, Side, SideInfo, Squad } from "./types";
+import { FormValues, Roster, Squad, TagIdMap } from "./types";
 
-let nextSquadId = 1;
-
-export function makeSquadFromSquadInfo(info: SquadInfo) {
-    const id = nextSquadId;
-    nextSquadId *= 2;
-
+export function makeSquadFromSquadInfo(info: SquadInfo, id: number) {       
     return {
         id,
         tag: info.tag,
@@ -16,18 +11,9 @@ export function makeSquadFromSquadInfo(info: SquadInfo) {
     } as Squad;
 }
 
-export function makeSquadFromForm(info: Squad) {
-    let curId: number;
-
-    if (info.id)
-        curId = info.id;
-    else {
-        curId = nextSquadId;
-        nextSquadId *= 2;
-    }
-
+export function makeSquadFromForm(info: Squad, id: number) {
     return {
-        id: curId,
+        id,
         tag: info.tag,
         slots: info.slots,
         with: info.with,
@@ -54,11 +40,143 @@ export function getSquadIdsFromMask(mask: bigint) {
     return ids;
 }
 
-export function calcDefaultHappiness(squads: Squad[]) {
-    const totalSlots = squads.reduce((acc, squad) => acc + squad.slots, 0);
-    return Math.round(((totalSlots / 4) / (totalSlots / squads.length)) * 1.2);
+export function calcDefaultFormParams(squads: Squad[]) {
+    let totalSlots = 0;
+    let largestSquad = 0;
+    let smallestSquad = 1000;
+
+    for (const squad of squads) {
+        totalSlots += squad.slots;
+        largestSquad = Math.max(largestSquad, squad.slots);
+        smallestSquad = Math.min(smallestSquad, squad.slots);
+    }
+
+    const slotsPerSide = totalSlots / 4;
+    const squadsPerSide = slotsPerSide / (totalSlots / squads.length); 
+    const defaultHappiness = Math.round(squadsPerSide * 1.5 - squadsPerSide * 0.2 - 1);
+
+    if (squadsPerSide === 1) {
+        return {
+            slots: {
+                defaultValue: largestSquad - Math.max(...squads.map(s => s.slots)),
+                min: 0,
+                max: 0
+            },
+            happiness: {
+                defaultValue: defaultHappiness,
+                min: 0, 
+                max: 0
+            }
+        } as FormValues;
+    }
+
+    const formParams : FormValues = {
+        slots: {
+            defaultValue: 2,
+            min: 0,
+            max: 4
+        },
+        happiness: {
+            defaultValue: defaultHappiness,
+            min: Math.ceil(squadsPerSide) * -2, 
+            max: Math.floor(squadsPerSide) * Math.floor(squadsPerSide / 3)
+        }
+    };
+
+    return formParams;
 }
 
 export function printTime(string: string, start: number) {
     console.log(string, ((performance.now() - start) / 60000).toFixed(2), 'm');
+}
+
+export function makeSquadsInfo(squads: Squad[], tagIdMap: TagIdMap) {
+    const info : SquadInfo[] = [];
+
+    for (const squad of squads) {
+        const squadInfo : SquadInfo = {
+            slots: squad.slots,
+            tag: squad.tag,
+            with: Array.from(squad.with).map(id => tagIdMap.get(id)! as string),
+            without: Array.from(squad.without).map(id => tagIdMap.get(id)! as string),
+        };
+        info.push(squadInfo);
+    }
+    return JSON.stringify(info);
+}
+
+export async function readSquadInfo(file: File) {
+    return new Promise<SquadInfo[]>((resolve, reject) => {
+        const reader = new FileReader();
+
+        reader.onload = () => {
+            const text = reader.result as string;
+
+            try {
+                const data = JSON.parse(text) as SquadInfo[];
+                resolve(data);
+            }
+            catch (error) {
+                console.log(error);
+                reject();
+            }
+        };
+        reader.onerror = (err) => reject();
+
+        reader.readAsText(file, 'utf-8');
+    })
+    .then(data => makeSquadsFromSquadInfo(data))
+    .catch(err => null)
+}
+
+export function makeSquadsFromSquadInfo(squadsInfo: SquadInfo[]) {
+
+    try {
+        let nextId = 1;
+        const squads: Squad[] = [];
+        const tagIdMap : TagIdMap = new Map();
+
+        for (const info of squadsInfo) {
+            const squad = makeSquadFromSquadInfo(info, nextId);
+            squads.push(squad);
+            tagIdMap.set(squad.tag, squad.id);
+            tagIdMap.set(squad.id, squad.tag);
+            nextId *= 2;
+        }
+
+        for (let i = 0; i < squads.length; i++) {
+            const squad = squads[i];
+            const info = squadsInfo[i];
+            squad.with = new Set(info.with.map(tag => tagIdMap.get(tag) as number));
+            squad.without = new Set(info.without.map(tag => tagIdMap.get(tag) as number));
+        }
+
+        sortSquads(squads);
+
+        return {squads, tagIdMap, nextId};
+    }
+    catch(error) {
+        console.log(error);
+        throw '';
+    }
+}
+
+export type SquadsData = ReturnType<typeof makeSquadsFromSquadInfo>;
+
+export function sortSquads(squads: Squad[]) {
+    return squads.sort((a, b) => a.tag.toUpperCase() > b.tag.toUpperCase() ? 1 : -1);
+}
+
+export function downloadSquadsInfo(squads: Squad[], tagIdMap: TagIdMap) {
+    const data = makeSquadsInfo(squads, tagIdMap);
+    const blob = new Blob([data], {type: 'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.download = `Squads_${new Date().toLocaleDateString()}.txt`;
+    a.href = url;
+    a.click();
+}
+
+export function sortRosters(prev: Roster[], newOne: Roster) {
+    return [...prev, newOne].sort((a, b) => b.totalHappiness - a.totalHappiness);
 }

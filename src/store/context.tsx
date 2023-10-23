@@ -4,7 +4,7 @@ import { Action } from "./actions";
 import { translations } from "./translations";
 
 export const StateContext = createContext<{state: State, dispatch: React.Dispatch<Action>}>({
-    state: {squads: [],tagIdMap: new Map(), ui: translations.en, defaultHappiness: 0},
+    state: {squads: [], tagIdMap: new Map(), ui: translations.en, nextId: 1},
     dispatch: () => {}
 });
 

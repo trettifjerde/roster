@@ -6,6 +6,7 @@ let sides: Side[];
 let allSquads: bigint;
 let limit: number;
 let time: number;
+let slotsDiff: number;
 
 self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
     switch (data.command) {
@@ -14,6 +15,7 @@ self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
             allSquads = data.allSquads;
             limit = data.limit;
             slaveName = data.slaveName;
+            slotsDiff = data.slotsDiff;
             time = performance.now();
 
             console.log(`Slave ${slaveName} receives a new batch: {sides: ${sides.length}, limit: ${limit}}`);
@@ -29,7 +31,7 @@ function startCombining() {
     combineSides(allSquads, sides.map((s, i) => i));
 }
 
-function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
+function combineSides(remainingSquads: bigint, compIndexes: number[], level=3, otherSideSlots?: number) {
 
     if (level < 0) {
         
@@ -55,8 +57,9 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
             if (compSide.squads > remSq)
                 break;
             
-            if ((remSq & compSide.squads) === compSide.squads) 
+            if (((remSq & compSide.squads) === compSide.squads)) {
                 remInd.unshift(compIndex);
+            }
         }
 
         const rots = combineSides(remSq, remInd, level - 1)

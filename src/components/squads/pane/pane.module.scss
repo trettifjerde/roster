@@ -1,0 +1,22 @@
+@use '/src/styles/variables' as *;
+
+.cont {
+    border: 1px solid $primary-color;
+    border-radius: 0 0 $border-radius $border-radius;
+    padding-block: $gap-l;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: $gap-def;
+    
+    span {
+        flex-grow: 1;
+        text-align: end;
+    }
+}
+
+.btncont {
+    margin-top: $gap-l !important;
+}

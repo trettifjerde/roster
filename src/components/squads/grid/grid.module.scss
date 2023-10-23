@@ -1,26 +1,9 @@
 @use '/src/styles/variables' as *;
 
-.cont {
-    border: 1px solid $secondary-color;
-    border-radius: 0 0 $border-radius $border-radius;
-}
-
-.header {
-    display: flex;
-    align-items: center;
-    gap: $gap-def;
-    
-    span {
-        flex-grow: 1;
-        text-align: end;
-    }
-}
-
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(auto, 280px));
     justify-content: center;
-    gap: $gap-def;
 
     @include res-min($breakpoint-m) {
         gap: $gap-m;
@@ -28,21 +11,5 @@
 }
 
 .new {
-
-    form {
-        background-color: $secondary-color;
-        padding: $gap-m;
-        border-radius: 5px;
-    }
-
-    button {
-        margin-inline: $gap-def;
-    }
-    
-    &>* {
-        margin-block: $gap-m;
-        display: block;
-        margin-inline: auto;
-        text-align: center;
-    }
+    color: $pale;
 }

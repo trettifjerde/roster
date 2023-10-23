@@ -57,3 +57,13 @@ a {
   color: $pale;
   line-height: 1.1;
 }
+
+.btncont {
+  margin-top: $gap-m;
+  margin-inline: auto;
+  text-align: center;
+
+  button {
+    margin-inline: $gap-def;
+  }
+}

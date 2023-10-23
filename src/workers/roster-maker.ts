@@ -56,7 +56,7 @@ function makeBatches() {
 
     while (sides.length > 0 && sidesToHandle > 0) {
         const prevBatch = batches[batches.length - 1];
-        const limit = prevBatch ? calcLimit(prevBatch, sidesToHandle) : Math.round(sides.length * 0.01);
+        const limit = prevBatch ? calcLimit(prevBatch, sidesToHandle) : Math.ceil(sides.length * 0.01);
         const batch : Batch = {sides: [...sides], limit};
 
         batches.push(batch);
@@ -74,7 +74,7 @@ function calcLimit(prevBatch: Batch, sidesToHandle: number) {
 function startCombining() {
     makeBatches();
 
-    for (let i = 0; i < SLAVES_NUM; i++) {
+    for (let i = 0; i < Math.min(SLAVES_NUM, batches.length); i++) {
         const worker = new SlaveWorker();
 
         worker.onmessage = (e: {data: RosterSlaveResponse}) => {
@@ -84,8 +84,7 @@ function startCombining() {
                 case 'update':
                     const roster = isValidRoster(data.rotation);
                     if (roster) {
-                        totalRosters++;
-                        self.postMessage({status: 'update', roster, totalRosters} as RosterMakerResponse);
+                        self.postMessage({status: 'update', roster} as RosterMakerResponse);
                     }
                     else 
                         console.log(data.rotation, 'from slave', i, 'has failed slots diff test');
@@ -130,6 +129,7 @@ function feedNewBatchTo(slave: Worker, name: string) {
         slaveName: name,
         limit: batch.limit,
         sides: batch.sides,
+        slotsDiff,
         allSquads
     } as RosterSlaveRequest);
 }
@@ -142,7 +142,14 @@ function isValidRoster(rot: Rotation) {
             return null;
     }
 
-    return sorted.map(side => buildSide(side)) as Roster;
+    const roster: Roster = {
+        id: totalRosters, 
+        roster: sorted.map(side => buildSide(side)),
+        totalHappiness: rot.reduce((acc, side) => acc + side.happiness, 0)
+    };
+    totalRosters++;
+
+    return roster;
 }
 
 function buildSide(side: Side) {

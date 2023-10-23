@@ -1,5 +1,5 @@
-import { useCallback, useContext, useEffect, useState } from "react";
-import { Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
+import { ReactNode, memo, useCallback, useContext, useEffect, useState } from "react";
+import { CalculationParams, Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
 
 import RosterGrid from "../grid/rosters-grid";
 import SidesMaker from '../../../workers/sides-maker?worker';
@@ -9,8 +9,10 @@ import Spinner from "../../ui/spinner";
 import styles from './pane.module.scss';
 import RosterForm from "../form/roster-form";
 import Header from "../header/header";
+import Modal from "../../ui/modal";
+import Button from "../../ui/button";
+import { sortRosters } from "../../../util/helpers";
 
-export type CalculationParams = {slots: number, happiness: number};
 
 export default function RosterPane() {
     const [sidesMaker, setSidesMaker] = useState(() => new SidesMaker());
@@ -50,8 +52,8 @@ export default function RosterPane() {
                     setStatus(ui.calculations.makingSides(data.sidesLength))
                     break;
                 case 'update':
-                    setRosters(prev => [...prev, data.roster]);
-                    setStatus(ui.calculations.rostersFound(data.totalRosters));
+                    setRosters(prev => sortRosters(prev, data.roster));
+                    setStatus(ui.calculations.rostersFound(data.roster.id + 1));
                     break;
                 case 'done':
                     setStatus(null);
@@ -78,21 +80,30 @@ export default function RosterPane() {
         
     }, [squads, rosterMaker, sidesMaker, ui]);
 
-    const abortCalculating = () => {
+    const abortCalculating = useCallback(() => {
         sidesMaker.terminate();
         rosterMaker.postMessage({command: 'terminate'} as RosterMakerRequest);
-    };
+    }, [sidesMaker, rosterMaker]);
 
-    const resetWorkers = () => {
+    const resetWorkers = useCallback(() => {
         setSidesMaker(new SidesMaker());
         setRosterMaker(new RosterMaker());
-    }
+    }, [setRosterMaker, setSidesMaker])
 
     return <div className={styles.pane}>
         <Header />
         <RosterForm startCalculating={startCalculating} />
         <RosterGrid header={ui.common.rosters} rosters={rosters} empty={isNotFound ? ui.rosters.notFound : ui.rosters.empty} />
-        {status && <Spinner text={ui.calculations.thisMightTake} status={status} abortText={ui.calculations.abortText} 
-            abort={abortCalculating}/>}
+        {status && <StatusModal abort={abortCalculating}>{status}</StatusModal>}
     </div>
 }
+
+const StatusModal = memo(({children, abort}: {children: ReactNode, abort: () => void}) => {
+    const {ui} = useContext(StateContext).state;
+
+    return <Modal header={ui.calculations.thisMightTake}>
+        <div className={styles['status-text']}>{children}</div>
+        <Spinner />
+        <Button onClick={abort}>{ui.calculations.abortText}</Button>
+    </Modal>
+})

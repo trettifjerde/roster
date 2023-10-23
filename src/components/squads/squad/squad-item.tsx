@@ -5,12 +5,16 @@ import SquadForm from "../form/squad-form";
 import Spoiler from "../../ui/spoiler";
 import Button from "../../ui/button";
 import styles from './squad.module.scss';
+import { translations } from "../../../store/translations";
 
 
-function SquadComponent({squad, tagIdMap, forceCollapse, withS, withoutS, edit}: {
-    squad: Squad, tagIdMap: TagIdMap, 
-    forceCollapse: boolean, withS: string, withoutS: string, edit: string
+function SquadItem({squad, tagIdMap, ui, forceCollapse}: {
+    squad: Squad, 
+    tagIdMap: TagIdMap, 
+    forceCollapse: boolean,
+    ui: typeof translations.en.squadItem
 }, ref: Ref<HTMLDivElement>|null) {
+
     const [editMode, setEditMode] = useState(false);
 
     const toggleMode = useCallback(() => setEditMode(prev => !prev), [setEditMode]);
@@ -36,11 +40,11 @@ function SquadComponent({squad, tagIdMap, forceCollapse, withS, withoutS, edit}:
             <AnimatePresence mode="wait">
                 {!editMode && <motion.div layout className={styles.info} 
                     initial={{opacity: 0, y: -100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: 100}}>
-                    <div className={styles.note}>{withS}</div>
-                    <div className={styles.note}>{withoutS}</div>
+                    <div className={styles.note}>{ui.with}</div>
+                    <div className={styles.note}>{ui.without}</div>
                     <div>{printWiths}</div>
                     <div>{printWithouts}</div>
-                    <Button onClick={toggleMode}>{edit}</Button>
+                    <Button onClick={toggleMode}>{ui.edit}</Button>
                 </motion.div>}
 
                 {editMode &&<SquadForm squad={squad} toggleForm={toggleMode}/>}
@@ -48,4 +52,4 @@ function SquadComponent({squad, tagIdMap, forceCollapse, withS, withoutS, edit}:
         </Spoiler>
 }
 
-export default memo(forwardRef(SquadComponent));
+export default memo(forwardRef(SquadItem));

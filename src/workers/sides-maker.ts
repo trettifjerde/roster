@@ -29,15 +29,18 @@ class SidesMaker {
             largestSquadSize = Math.max(largestSquadSize, squad.slots);
         }
         
-        const mltplr = largestSquadSize / smallestSquadSize;
-        const squadsPerSide = totalSlots / 4;
+        const slotsPerSide = totalSlots / 4;
+        const squadsPerSide = slotsPerSide / (totalSlots / squads.length)
+        const isLargestSquadOverQuarter = largestSquadSize > slotsPerSide;
         this.sortedIds = sortedIds;
         this.squadsMap = squadsMap;
-        this.maxSlotsPerSide = Math.ceil(squadsPerSide + mltplr);
-        this.minSlotsPerSide = Math.floor(squadsPerSide - mltplr);
+        this.maxSlotsPerSide = isLargestSquadOverQuarter ? largestSquadSize : Math.ceil(slotsPerSide + slotsDiff);
+        this.minSlotsPerSide = squadsPerSide === 1 ? smallestSquadSize :
+            isLargestSquadOverQuarter ? Math.ceil(((totalSlots - largestSquadSize * 2) - slotsDiff) / 2) : 
+            Math.floor(slotsPerSide - slotsDiff);
         this.smallestSquadSize = smallestSquadSize;
         this.intermediateHappiness = this.sideHappiness - Math.floor((squads.length / 8) *  (squads.length / 16) * 2);
-        this.intermediateHappinessCheckAtSlots = Math.floor(this.maxSlotsPerSide * 0.6);
+        this.intermediateHappinessCheckAtSlots = Math.floor(this.maxSlotsPerSide * 0.7);
     }
 
     start() {
