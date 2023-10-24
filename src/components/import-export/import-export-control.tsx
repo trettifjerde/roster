@@ -8,7 +8,7 @@ import Button from "../ui/button";
 export default function ImportExportControl() {
 
     const {state, dispatch} = useContext(StateContext);
-    const {squads, tagIdMap, ui} = state;
+    const {squads, idTagMap, ui} = state;
     const importRef = useRef<HTMLInputElement>(null);
     const [importConfirmation,setImportConfirmation] = useState(false);
     const [applyNewSquads, setApplyNewSquads] = useState<(e: MouseEvent) => Function>(() => (e: MouseEvent) => () => {});
@@ -48,13 +48,13 @@ export default function ImportExportControl() {
     const setNewSquadInfo = useCallback((data: SquadsData) => {
         dispatch(new UploadSquads(
             data.squads, 
-            data.tagIdMap, 
+            data.idTagMap, 
             data.nextId
         ));
         setImportConfirmation(false);
     }, [dispatch, setImportConfirmation]);
 
-    const exportSquadsInfo = () => downloadSquadsInfo(squads, tagIdMap);
+    const exportSquadsInfo = () => downloadSquadsInfo(squads, idTagMap);
 
     const closeConfirmation = useCallback(() => {
         setImportConfirmation(false);

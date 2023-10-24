@@ -16,9 +16,9 @@ export function initStateMaker() {
 
     const ui = translations[language]
 
-    const {squads, tagIdMap, nextId} = makeSquadsFromSquadInfo(SQUADS_INFO)
+    const {squads, idTagMap, nextId} = makeSquadsFromSquadInfo(SQUADS_INFO)
 
-    return {squads, tagIdMap, ui, nextId};
+    return {squads, idTagMap, ui, nextId};
 }
 export type State = ReturnType<typeof initStateMaker>;
 
@@ -33,7 +33,7 @@ export function reducer(state: State, action: a.Action) : State {
                 ...state,
                 squads,
                 nextId: state.nextId * 2,
-                tagIdMap: new Map(state.tagIdMap).set(squad.tag, squad.id).set(squad.id, squad.tag),
+                idTagMap: new Map(state.idTagMap).set(squad.id, squad.tag),
             }
 
         case a.UPDATE_SQUAD:
@@ -44,12 +44,9 @@ export function reducer(state: State, action: a.Action) : State {
                 squads,
             };
 
-            const oldTag = state.tagIdMap.get(action.info.id) as string;
+            const oldTag = state.idTagMap.get(action.info.id)!;
             if (oldTag !== action.info.tag) {
-                updState.tagIdMap = new Map(state.tagIdMap)
-                    .set(action.info.id, action.info.tag)
-                    .set(action.info.tag, action.info.id);
-                updState.tagIdMap.delete(oldTag);
+                updState.idTagMap = new Map(state.idTagMap).set(action.info.id, action.info.tag)
             }
 
             return updState;
@@ -69,13 +66,12 @@ export function reducer(state: State, action: a.Action) : State {
                             without: withouts
                         }
                     }
-
-                    else return s;
+                    else 
+                        return s;
                 })
 
-            const t = state.tagIdMap.get(action.id) as string;
-            state.tagIdMap.delete(t);
-            state.tagIdMap.delete(action.id);
+            const t = state.idTagMap.get(action.id)!;
+            state.idTagMap.delete(action.id);
 
             return {
                 ...state,
@@ -92,7 +88,7 @@ export function reducer(state: State, action: a.Action) : State {
             return {
                 ...state,
                 squads: action.squads,
-                tagIdMap: action.tagIdMap, 
+                idTagMap: action.idTagMap, 
                 nextId: action.nextId
             }
 

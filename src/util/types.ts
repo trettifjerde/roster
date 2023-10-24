@@ -1,6 +1,6 @@
 export type Squad = {id: number, tag: string, slots: number, with: Set<number>, without: Set<number>};
 export type SquadsMap = Map<number, Squad>;
-export type TagIdMap = Map<string|number, number|string>;
+export type IdTagMap = Map<number, string>;
 
 export type SideInfo = {slots: number, squads: number[], happiness: number};
 export type Roster = {id: number, roster: SideInfo[], totalHappiness: number};

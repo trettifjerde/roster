@@ -54,7 +54,7 @@ function SquadForm({squad, toggleForm}: {squad?: Squad, toggleForm: MouseEventHa
             dispatch(new DeleteSquad(squad.id))
     }, [squad, dispatch]);
 
-    return <motion.form layout ref={ref}
+    return <motion.form ref={ref}
         initial={{opacity: 0, y: 100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -100}}
             className="form" onSubmit={blockSubmit} onClickCapture={clearError}>
         <p className="form-err">{error}</p>

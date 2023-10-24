@@ -20,7 +20,6 @@
 
     &::after {
         content: '⌄';
-        margin-left: $gap-def;
         transition: transform .2s ease-in-out;
     }
 

@@ -1,6 +1,6 @@
 import { Ref, forwardRef, memo, useCallback, useMemo, useState } from "react";
 import {AnimatePresence, motion} from 'framer-motion';
-import { Squad, TagIdMap } from "../../../util/types";
+import { Squad, IdTagMap } from "../../../util/types";
 import SquadForm from "../form/squad-form";
 import Spoiler from "../../ui/spoiler";
 import Button from "../../ui/button";
@@ -11,10 +11,10 @@ import styles from './squad.module.scss';
 const SquadItem = memo(
     forwardRef<Ref<HTMLDivElement>|null, {
         squad: Squad, 
-        tagIdMap: TagIdMap, 
+        idTagMap: IdTagMap, 
         forceCollapse: boolean,
         ui: typeof translations.en.squadItem
-    }>(({squad, tagIdMap, forceCollapse, ui}, ref) => {
+    }>(({squad, idTagMap, forceCollapse, ui}, ref) => {
 
     const [editMode, setEditMode] = useState(false);
 
@@ -29,17 +29,17 @@ const SquadItem = memo(
 
     const printPreferences = useCallback((a: 'with'|'without') => {
         return [...squad[a]]
-            .map(id => ({id, tag: tagIdMap.get(id) as string}))
+            .map(id => ({id, tag: idTagMap.get(id)!}))
             .sort((a, b) => a.tag.toUpperCase() < b.tag.toUpperCase() ? -1 : 1)
             .map(entry => <p key={entry.id}>{entry.tag}</p>)
-    }, [tagIdMap, squad]);
+    }, [idTagMap, squad]);
 
     const printWiths = useMemo(() => printPreferences('with'), [printPreferences]); 
     const printWithouts = useMemo(() => printPreferences('without'), [printPreferences]);
     
     return <Spoiler coloredBg header={getHeader} forceCollapse={forceCollapse}>
         <AnimatePresence mode="wait">
-            {!editMode && <motion.div layout className={styles.info} 
+            {!editMode && <motion.div className={styles.info} 
                 initial={{opacity: 0, y: -100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: 100}}>
                 <div className={styles.note}>{ui.with}</div>
                 <div className={styles.note}>{ui.without}</div>

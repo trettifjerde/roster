@@ -1,5 +1,5 @@
 import { MouseEvent, memo, useCallback, useContext, useMemo, useState } from 'react';
-import { HappinessInfo, Roster, SideInfo, Squad, TagIdMap } from '../../../util/types';
+import { HappinessInfo, Roster, SideInfo, Squad, IdTagMap } from '../../../util/types';
 import styles from './item.module.scss';
 import { StateContext } from '../../../store/context';
 import HoverNote from './hover-note';
@@ -13,17 +13,17 @@ const RosterItem = memo(({roster} : {roster: Roster}) => {
 export default RosterItem;
 
 function Side({side}: {side: SideInfo}) {
-    const {squads, tagIdMap, ui} = useContext(StateContext).state;
+    const {squads, idTagMap, ui} = useContext(StateContext).state;
     const [currentHappinessInfo, setCurrentHappinessInfo] = useState<HappinessInfo | null>(null);
     const [position, setPosition] = useState<{X: number, Y: number}>({X: 0, Y: 0});
 
     const squadsHappiness = useMemo(() => squads.reduce((acc, squad) => {
-        acc.set(squad.id, makeHappinessInfo(squad.id, side.squads, squads, tagIdMap));
+        acc.set(squad.id, makeHappinessInfo(squad.id, side.squads, squads, idTagMap));
         return acc;
     }, new Map<number, HappinessInfo>()), [side]);
     
     const squadTags = useMemo(() => side.squads
-        .map(squad => ({id: squad, tag: tagIdMap.get(squad) as string}))
+        .map(squad => ({id: squad, tag: idTagMap.get(squad)!}))
         .sort((a, b) => {
             const [aInfo, bInfo] = [a, b].map(s => squadsHappiness.get(s.id)!);
 
@@ -61,7 +61,7 @@ function Side({side}: {side: SideInfo}) {
     </div>
 }
 
-function makeHappinessInfo(id: number, side: number[], squads: Squad[], tagIdMap: TagIdMap) {
+function makeHappinessInfo(id: number, side: number[], squads: Squad[], idTagMap: IdTagMap) {
     const squad = squads.find(s => s.id === id)!;
 
     const info : HappinessInfo = {tag: squad.tag, total: 0, happy: [], unhappy: []};
@@ -71,11 +71,11 @@ function makeHappinessInfo(id: number, side: number[], squads: Squad[], tagIdMap
             continue;
 
         if (squad.with.has(squadId)) {
-            info.happy.push(tagIdMap.get(squadId) as string);
+            info.happy.push(idTagMap.get(squadId)!);
             info.total += 1;
         }
         else if (squad.without.has(squadId)) {
-            info.unhappy.push(tagIdMap.get(squadId) as string);
+            info.unhappy.push(idTagMap.get(squadId)!);
             info.total -= 2;
         }
     }

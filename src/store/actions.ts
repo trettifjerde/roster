@@ -1,4 +1,4 @@
-import { Squad, TagIdMap } from "../util/types";
+import { Squad, IdTagMap } from "../util/types";
 import { Language } from "./translations";
 
 export const ADD_SQUAD = 'ADD_SQUAD';
@@ -31,7 +31,7 @@ export class UploadSquads {
     public readonly type = UPLOAD_SQUADS;
     constructor(
         public squads: Squad[], 
-        public tagIdMap: TagIdMap, 
+        public idTagMap: IdTagMap, 
         public nextId: number
     ) {}
 }

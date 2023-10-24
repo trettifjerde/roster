@@ -23,12 +23,12 @@ function Spoiler({header, coloredBg, children, initial, forceCollapse}: {
     }, [initial, forceCollapse, setOpen]);
 
 
-    return <motion.div layout className={styles.spoiler} ref={ref}>
+    return <motion.div layout="position" className={styles.spoiler} ref={ref}>
         <motion.div layout className={`header ${styles.header} ${open ? styles.open : ''}`} onClick={toggleSpoiler}>
             {header()}
         </motion.div>
-        <motion.div layout className={styles.body} variants={variants} initial="hidden" animate={open ? 'visible' : 'hidden'}>
-            <motion.div layout className={`headed-cont ${styles.inner} ${coloredBg ? styles.innerBg : ''}`} >
+        <motion.div layout="preserve-aspect" className={styles.body} variants={variants} initial="hidden" animate={open ? 'visible' : 'hidden'}>
+            <motion.div layout="preserve-aspect" className={`headed-cont ${styles.inner} ${coloredBg ? styles.innerBg : ''}`} >
                 {children}
             </motion.div>
         </motion.div>

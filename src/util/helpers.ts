@@ -1,5 +1,5 @@
 import { SquadInfo } from "./squads-info";
-import { FormValues, Roster, Squad, TagIdMap } from "./types";
+import { FormValues, Roster, Squad, IdTagMap } from "./types";
 
 export function makeSquadFromSquadInfo(info: SquadInfo, id: number) {       
     return {
@@ -56,9 +56,10 @@ export function calcDefaultFormParams(squads: Squad[]) {
     const defaultHappiness = Math.round(squadsPerSide * 1.5 - squadsPerSide * 0.2 - 1);
 
     if (squadsPerSide === 1) {
+        const largestSquadId = squads.find(s => s.slots === largestSquad)!.id;
         return {
             slots: {
-                defaultValue: largestSquad - Math.max(...squads.map(s => s.slots)),
+                defaultValue: largestSquad - Math.max(...squads.filter(s => s.id !== largestSquadId).map(s => s.slots)),
                 min: 0,
                 max: 0
             },
@@ -79,7 +80,7 @@ export function calcDefaultFormParams(squads: Squad[]) {
         happiness: {
             defaultValue: defaultHappiness,
             min: Math.ceil(squadsPerSide) * -2, 
-            max: Math.floor(squadsPerSide) * Math.floor(squadsPerSide / 3)
+            max: Math.floor(squadsPerSide) * 2
         }
     };
 
@@ -90,15 +91,15 @@ export function printTime(string: string, start: number) {
     console.log(string, ((performance.now() - start) / 60000).toFixed(2), 'm');
 }
 
-export function makeSquadsInfo(squads: Squad[], tagIdMap: TagIdMap) {
+export function makeSquadsInfo(squads: Squad[], idTagMap: IdTagMap) {
     const info : SquadInfo[] = [];
 
     for (const squad of squads) {
         const squadInfo : SquadInfo = {
             slots: squad.slots,
             tag: squad.tag,
-            with: Array.from(squad.with).map(id => tagIdMap.get(id)! as string),
-            without: Array.from(squad.without).map(id => tagIdMap.get(id)! as string),
+            with: Array.from(squad.with).map(id => idTagMap.get(id)!),
+            without: Array.from(squad.without).map(id => idTagMap.get(id)!),
         };
         info.push(squadInfo);
     }
@@ -134,26 +135,27 @@ export function makeSquadsFromSquadInfo(squadsInfo: SquadInfo[]) {
     try {
         let nextId = 1;
         const squads: Squad[] = [];
-        const tagIdMap : TagIdMap = new Map();
+        const idTagMap : IdTagMap = new Map();
+        const tagIdMap : Map<string, number> = new Map();
 
         for (const info of squadsInfo) {
             const squad = makeSquadFromSquadInfo(info, nextId);
             squads.push(squad);
+            idTagMap.set(squad.id, squad.tag);
             tagIdMap.set(squad.tag, squad.id);
-            tagIdMap.set(squad.id, squad.tag);
             nextId *= 2;
         }
 
         for (let i = 0; i < squads.length; i++) {
             const squad = squads[i];
             const info = squadsInfo[i];
-            squad.with = new Set(info.with.map(tag => tagIdMap.get(tag) as number));
-            squad.without = new Set(info.without.map(tag => tagIdMap.get(tag) as number));
+            squad.with = new Set(info.with.map(tag => tagIdMap.get(tag)!));
+            squad.without = new Set(info.without.map(tag => tagIdMap.get(tag)!));
         }
 
         sortSquads(squads);
 
-        return {squads, tagIdMap, nextId};
+        return {squads, idTagMap, nextId};
     }
     catch(error) {
         console.log(error);
@@ -167,8 +169,8 @@ export function sortSquads(squads: Squad[]) {
     return squads.sort((a, b) => a.tag.toUpperCase() > b.tag.toUpperCase() ? 1 : -1);
 }
 
-export function downloadSquadsInfo(squads: Squad[], tagIdMap: TagIdMap) {
-    const data = makeSquadsInfo(squads, tagIdMap);
+export function downloadSquadsInfo(squads: Squad[], idTagMap: IdTagMap) {
+    const data = makeSquadsInfo(squads, idTagMap);
     const blob = new Blob([data], {type: 'text/plain;charset=utf-8'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
