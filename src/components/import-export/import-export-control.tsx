@@ -6,7 +6,6 @@ import Modal from "../ui/modal";
 import Button from "../ui/button";
 
 export default function ImportExportControl() {
-    console.log('import export');
 
     const {state, dispatch} = useContext(StateContext);
     const {squads, tagIdMap, ui} = state;
