@@ -1,27 +1,15 @@
-# React + TypeScript + Vite
+# Roster Calculator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A utility developed for [SolidGames](https://sg.zone).
 
-Currently, two official plugins are available:
+Designed to help SolidGames Sides Manager assign player squads to competing sides on different game servers.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Ensures squads are distributed evenly
+- Takes into account preferences the squads expressed on what squads they would and would not like to play with
+- Provides detailed information on each squad's happiness level in every suggested roster
 
-## Expanding the ESLint configuration
+A user can easily edit squads information right inside the app, as well as upload their own squads info from JSON file. The in-app squads information can also be exported for future use.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+**Warning**! If the total number of squads excedes 25, it is highly not recommended to use the app on mobile devices since such roster calculations require significant computing resources and a couple of GB of RAM to store intermediate results. 
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+The deployed app can be found here: https://roster-phi.vercel.app/
