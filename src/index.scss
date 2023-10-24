@@ -1,3 +1,5 @@
+
+@use 'sass:math';
 @use './styles/variables' as *;
 
 * {
@@ -47,6 +49,9 @@ a {
 }
 
 .header {
+  display: flex;
+  align-items: center;
+  gap: $gap-def;
   padding: $gap-def $gap-m;
   background-color: $primary-color;
   border-radius: $border-radius $border-radius 0 0;
@@ -65,5 +70,53 @@ a {
 
   button {
     margin-inline: $gap-def;
+    margin-block: math.div($gap-def, 2);
   }
+}
+
+.form {
+    text-align: center;
+
+    label {
+        line-height: 2;
+    }
+
+    input {
+        background-color: $primary-hover;
+    }
+
+    p {
+        margin-block: $gap-def;
+    }
+}
+
+.form-err {
+    line-height: 1.2rem;
+    height: 1.2rem;
+    margin-block: $gap-def;
+    font-size: 0.85rem;
+    color: $red;
+    text-align: center;
+}
+
+.form-control {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    align-items: center;
+    gap: $gap-m;
+    margin-block: $gap-def;
+
+    input {
+        width: 100%;
+    }
+}
+
+.invalid {
+    border: 1px solid $red;
+}
+
+.headed-cont {
+    padding: $gap-m $gap-l;
+    border: 1px solid $primary-color;
+    border-radius: 0 0 $border-radius $border-radius;
 }

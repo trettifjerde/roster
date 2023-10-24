@@ -7,10 +7,10 @@ const variants = {
     visible: {opacity: 1, height: '100%'}
 }
 
-function Spoiler({header, children, className, initial, forceCollapse}: {
+function Spoiler({header, coloredBg, children, initial, forceCollapse}: {
     header: () => JSX.Element, 
+    coloredBg?: boolean,
     children: ReactNode,
-    className?: string,
     initial?: boolean,
     forceCollapse?: boolean
 }, 
@@ -28,7 +28,7 @@ function Spoiler({header, children, className, initial, forceCollapse}: {
             {header()}
         </motion.div>
         <motion.div layout className={styles.body} variants={variants} initial="hidden" animate={open ? 'visible' : 'hidden'}>
-            <motion.div layout className={`${styles.inner} ${className ? className : ''}`} >
+            <motion.div layout className={`headed-cont ${styles.inner} ${coloredBg ? styles.innerBg : ''}`} >
                 {children}
             </motion.div>
         </motion.div>

@@ -4,13 +4,13 @@ import styles from './item.module.scss';
 import { StateContext } from '../../../store/context';
 import HoverNote from './hover-note';
 
-function RosterItem({roster} : {roster: Roster}) {
+const RosterItem = memo(({roster} : {roster: Roster}) => {
     return <div className={styles.roster} >
         {roster.roster.map((side, i) => <Side key={i} side={side}/>)}
     </div>
-}
+});
 
-export default memo(RosterItem);
+export default RosterItem;
 
 function Side({side}: {side: SideInfo}) {
     const {squads, tagIdMap, ui} = useContext(StateContext).state;

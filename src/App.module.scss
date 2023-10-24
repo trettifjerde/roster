@@ -1,16 +1,18 @@
 @use '/src/styles/variables' as *;
 
 .cont {
+    display: flex;
+    flex-direction: column;
+    gap: $gap-m;
     margin-inline: $gap-def;
-    margin-block: $gap-m;
+    margin-block: 6rem;
 
     @include res-min($breakpoint-m) {
-        margin-block: $gap-m;
         margin-inline: 5vh;
+        gap: $gap-l;
     }
 
     @include res-min($breakpoint-l) {
-        margin-block: 10vh;
         margin-inline: 5vw;
     }
 

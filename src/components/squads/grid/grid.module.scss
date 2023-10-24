@@ -4,6 +4,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(auto, 280px));
     justify-content: center;
+    gap: $gap-def;
 
     @include res-min($breakpoint-m) {
         gap: $gap-m;
@@ -12,4 +13,5 @@
 
 .new {
     color: $pale;
+    text-align: start;
 }

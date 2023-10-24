@@ -3,14 +3,14 @@ import { Roster } from "../../../util/types";
 import RosterItem from "../item/roster-item";
 import styles from './grid.module.scss';
 
-function RosterGrid({rosters, header, empty}: {rosters: Roster[], header: string, empty: string}) {
+const RosterGrid = memo(({rosters, header, empty}: {rosters: Roster[], header: string, empty: string}) => {
 
     return <>
         <div className={`header ${styles.header}`}>
             <h2>{header}</h2>
             <p>{rosters.length}</p>
         </div>
-        <div className={styles.cont}>
+        <div className="headed-cont">
             <div className={styles.grid}>
                 {rosters.map((roster, i) => <RosterItem key={roster.id} roster={roster}/>)}
             </div>
@@ -18,6 +18,6 @@ function RosterGrid({rosters, header, empty}: {rosters: Roster[], header: string
         </div>
 
     </>
-}
+});
 
-export default memo(RosterGrid);
+export default RosterGrid;

@@ -1,15 +1,7 @@
 @use '/src/styles/variables' as *;
 
-.cont {
-    padding: $gap-m $gap-l;
-    border: 1px solid $primary-color;
-    border-radius: 0 0 $border-radius $border-radius;
-}
-
 .header {
-    display: flex;
     justify-content: space-between;
-    align-items: center;
 }
 
 .grid {

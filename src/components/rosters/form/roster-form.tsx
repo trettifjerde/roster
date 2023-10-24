@@ -1,13 +1,16 @@
 import { ChangeEventHandler, memo, useContext, useEffect, useRef, useState } from 'react';
-import formStyles from '../../ui/form.module.scss';
-import styles from './form.module.scss';
-import Button from '../../ui/button';
-import { StateContext } from '../../../store/context';
-import { translations } from '../../../store/translations';
+
 import { CalculationParams, FormValues } from '../../../util/types';
 import { calcDefaultFormParams } from '../../../util/helpers';
 
-function cleanOrGetError(ui: typeof translations.en.rosterForm, formValues: FormValues, key: keyof FormValues, v: string) {
+import { RosterFormUI } from '../../../store/translations';
+import { StateContext } from '../../../store/context';
+
+import Button from '../../ui/button';
+
+import styles from './form.module.scss';
+
+function cleanOrGetError(ui: RosterFormUI, formValues: FormValues, key: keyof FormValues, v: string) {
     const value = +v;
     const info = formValues[key];
 
@@ -88,18 +91,18 @@ function RosterForm({startCalculating}: {
     }
 
     const cleanError = (input: HTMLInputElement) => {
-        input.classList.remove(formStyles.invalid);
+        input.classList.remove("invalid");
         setError('');
     }
 
     const markError = (input: HTMLInputElement, err: string) => {
-        input.classList.add(formStyles.invalid);
+        input.classList.add("invalid");
         setError(err);
     }
 
-    return <form className={`${formStyles.form} ${styles.form}`} ref={ref}
+    return <form className={`form ${styles.form}`} ref={ref}
         onSubmit={(e) => e.preventDefault()}>
-        <p className={formStyles.err}>{error}</p>
+        <p className="form-err">{error}</p>
         <div>
             <div className={styles.lblcont}>
                 <label>{ui.rosterForm.slots.label}

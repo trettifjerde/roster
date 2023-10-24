@@ -5,7 +5,6 @@ import { StateContext } from '../../../store/context';
 import { Squad } from '../../../util/types';
 import Button from '../../ui/button';
 import styles from './form.module.scss';
-import formStyles from '../../ui/form.module.scss';
 
 function SquadForm({squad, toggleForm}: {squad?: Squad, toggleForm: MouseEventHandler}, ref: Ref<HTMLFormElement>|null) {
     const {state, dispatch} = useContext(StateContext);
@@ -57,13 +56,13 @@ function SquadForm({squad, toggleForm}: {squad?: Squad, toggleForm: MouseEventHa
 
     return <motion.form layout ref={ref}
         initial={{opacity: 0, y: 100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -100}}
-            className={formStyles.form} onSubmit={blockSubmit} onClickCapture={clearError}>
-        <p className={formStyles.err}>{error}</p>
-        <div className={formStyles.cont}>
+            className="form" onSubmit={blockSubmit} onClickCapture={clearError}>
+        <p className="form-err">{error}</p>
+        <div className="form-control">
             <label>{ui.squadsForm.tag}</label>
             <input name="tag" type='text' defaultValue={squad ? squad.tag : ''} />
         </div>
-        <div className={formStyles.cont}>
+        <div className="form-control">
             <label>{ui.common.slots}</label>
             <input name="slots" type='number' min={0} defaultValue={squad ? squad.slots : 0}/>
         </div>

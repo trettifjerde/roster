@@ -4,16 +4,17 @@ import { Squad, TagIdMap } from "../../../util/types";
 import SquadForm from "../form/squad-form";
 import Spoiler from "../../ui/spoiler";
 import Button from "../../ui/button";
-import styles from './squad.module.scss';
 import { translations } from "../../../store/translations";
+import styles from './squad.module.scss';
 
 
-function SquadItem({squad, tagIdMap, ui, forceCollapse}: {
-    squad: Squad, 
-    tagIdMap: TagIdMap, 
-    forceCollapse: boolean,
-    ui: typeof translations.en.squadItem
-}, ref: Ref<HTMLDivElement>|null) {
+const SquadItem = memo(
+    forwardRef<Ref<HTMLDivElement>|null, {
+        squad: Squad, 
+        tagIdMap: TagIdMap, 
+        forceCollapse: boolean,
+        ui: typeof translations.en.squadItem
+    }>(({squad, tagIdMap, forceCollapse, ui}, ref) => {
 
     const [editMode, setEditMode] = useState(false);
 
@@ -36,20 +37,20 @@ function SquadItem({squad, tagIdMap, ui, forceCollapse}: {
     const printWiths = useMemo(() => printPreferences('with'), [printPreferences]); 
     const printWithouts = useMemo(() => printPreferences('without'), [printPreferences]);
     
-    return <Spoiler header={getHeader} className={styles.squad} forceCollapse={forceCollapse}>
-            <AnimatePresence mode="wait">
-                {!editMode && <motion.div layout className={styles.info} 
-                    initial={{opacity: 0, y: -100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: 100}}>
-                    <div className={styles.note}>{ui.with}</div>
-                    <div className={styles.note}>{ui.without}</div>
-                    <div>{printWiths}</div>
-                    <div>{printWithouts}</div>
-                    <Button onClick={toggleMode}>{ui.edit}</Button>
-                </motion.div>}
+    return <Spoiler coloredBg header={getHeader} forceCollapse={forceCollapse}>
+        <AnimatePresence mode="wait">
+            {!editMode && <motion.div layout className={styles.info} 
+                initial={{opacity: 0, y: -100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: 100}}>
+                <div className={styles.note}>{ui.with}</div>
+                <div className={styles.note}>{ui.without}</div>
+                <div>{printWiths}</div>
+                <div>{printWithouts}</div>
+                <Button onClick={toggleMode}>{ui.edit}</Button>
+            </motion.div>}
 
-                {editMode &&<SquadForm squad={squad} toggleForm={toggleMode}/>}
-            </AnimatePresence>
-        </Spoiler>
-}
+            {editMode &&<SquadForm squad={squad} toggleForm={toggleMode}/>}
+        </AnimatePresence>
+    </Spoiler>
+}));
 
-export default memo(forwardRef(SquadItem));
+export default SquadItem;

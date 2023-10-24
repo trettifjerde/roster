@@ -1,36 +1,39 @@
-import { ReactNode, memo, useCallback, useContext, useEffect, useState } from "react";
-import { CalculationParams, Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
+import { ReactNode, memo, useCallback, useContext, useState } from "react";
 
-import RosterGrid from "../grid/rosters-grid";
-import SidesMaker from '../../../workers/sides-maker?worker';
+import { CalculationParams, Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
+import { sortRosters } from "../../../util/helpers";
+
 import RosterMaker from '../../../workers/roster-maker?worker';
+import SidesMaker from '../../../workers/sides-maker?worker';
+
 import { StateContext } from "../../../store/context";
-import Spinner from "../../ui/spinner";
-import styles from './pane.module.scss';
+
 import RosterForm from "../form/roster-form";
-import Header from "../header/header";
+import RosterGrid from "../grid/rosters-grid";
 import Modal from "../../ui/modal";
 import Button from "../../ui/button";
-import { sortRosters } from "../../../util/helpers";
+import Spinner from "../../ui/spinner";
+
+import styles from './pane.module.scss';
 
 
 export default function RosterPane() {
     const [sidesMaker, setSidesMaker] = useState(() => new SidesMaker());
     const [rosterMaker, setRosterMaker] = useState(() => new RosterMaker());
+
     const {squads, ui} = useContext(StateContext).state;
 
     const [status, setStatus] = useState<JSX.Element | null>(null);
     const [rosters, setRosters] = useState<Roster[]>([]);
-    const [isNotFound, setIfNotFound] = useState(false); 
+    const [isNotFound, setIsNotFound] = useState(false); 
 
     const startCalculating = useCallback(({slots, happiness} : CalculationParams) => {
         setRosters([]);
-        setIfNotFound(false);
+        setIsNotFound(false);
 
         const allSquads = squads.reduce((acc, squad) => acc + BigInt(squad.id), BigInt(0));
 
-        sidesMaker.onmessage = (e : {data: SidesMakerResponse}) => {
-            const {data} = e;
+        sidesMaker.onmessage = ({data} : {data: SidesMakerResponse}) => {
             switch (data.status) {
                 case 'update':
                     rosterMaker.postMessage({command: 'update', side: data.side} as RosterMakerRequest);
@@ -41,8 +44,7 @@ export default function RosterPane() {
             }
         };
 
-        rosterMaker.onmessage = (e: {data: RosterMakerResponse}) => {
-            const {data} = e;
+        rosterMaker.onmessage = ({data}: {data: RosterMakerResponse}) => {
             
             switch (data.status) {
                 case 'starting':
@@ -57,7 +59,7 @@ export default function RosterPane() {
                     break;
                 case 'done':
                     setStatus(null);
-                    setIfNotFound(true);
+                    setIsNotFound(true);
                     break;
                 case 'slaves-terminated':
                     rosterMaker.terminate();
@@ -88,10 +90,9 @@ export default function RosterPane() {
     const resetWorkers = useCallback(() => {
         setSidesMaker(new SidesMaker());
         setRosterMaker(new RosterMaker());
-    }, [setRosterMaker, setSidesMaker])
+    }, [])
 
-    return <div className={styles.pane}>
-        <Header />
+    return <div>
         <RosterForm startCalculating={startCalculating} />
         <RosterGrid header={ui.common.rosters} rosters={rosters} empty={isNotFound ? ui.rosters.notFound : ui.rosters.empty} />
         {status && <StatusModal abort={abortCalculating}>{status}</StatusModal>}

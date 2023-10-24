@@ -9,8 +9,6 @@
 }
 
 .header {
-    display: flex;
-    align-items: center;
     justify-content: space-between;
     transition: background-color .2s ease-in-out;
     cursor: pointer;
@@ -46,8 +44,11 @@
     overflow: auto;
 }
 
-.inner {
-    padding: $gap-m $gap-l;
-    text-align: center;    
+.inner {   
     height: 100%;
+}
+
+.innerBg {
+    background-color: $secondary-color;
+    border-color: transparent !important;
 }

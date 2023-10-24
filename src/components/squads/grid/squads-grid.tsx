@@ -1,20 +1,20 @@
-import { AnimatePresence, motion } from 'framer-motion';
-import styles from './grid.module.scss';
 import { memo, useCallback, useContext, useRef } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+
 import { StateContext } from '../../../store/context';
-import SquadItem from '../squad/squad-item';
+
 import Spoiler from '../../ui/spoiler';
+import SquadItem from '../item/squad-item';
 import SquadForm from '../form/squad-form';
-import squadStyles from '../squad/squad.module.scss';
+
+import styles from './grid.module.scss';
 
 const SquadsGrid = memo(({forceChildCollapse}: {forceChildCollapse: boolean}) => {
     const {squads, tagIdMap, ui} = useContext(StateContext).state;
     const newSquadFormRef = useRef<HTMLFormElement>(null);
 
     const newSquadHeader = useCallback(() => {
-        return <div className={`${squadStyles.header} ${styles.new}`}>
-            <h3>{ui.squads.newSquad}</h3>
-        </div>
+        return <h3 className={styles.new}>{ui.squads.newSquad}</h3>
     }, [ui]);
 
     const resetNewSquadForm = useCallback(() => {
@@ -27,7 +27,7 @@ const SquadsGrid = memo(({forceChildCollapse}: {forceChildCollapse: boolean}) =>
         {squads.map(squad => <SquadItem key={squad.id} tagIdMap={tagIdMap} squad={squad} 
             forceCollapse={forceChildCollapse} ui={ui.squadItem}/>)}
 
-        <Spoiler key="new-squad" header={newSquadHeader} className={squadStyles.squad} forceCollapse={forceChildCollapse}>
+        <Spoiler coloredBg key="new-squad" header={newSquadHeader} forceCollapse={forceChildCollapse}>
             {<motion.div initial={{opacity: 0, y: 10}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -10}}>
                 <SquadForm toggleForm={resetNewSquadForm} ref={newSquadFormRef} />
             </motion.div>}

@@ -6,9 +6,16 @@ import * as a from "./actions"
 
 
 export function initStateMaker() {
-    const language = (localStorage.getItem('lang') || 'en') as Language;
+    const language = (() =>{
+        let lang = localStorage.getItem('lang');
+        if (!lang || (lang !== 'en' && lang !== 'ru')) 
+            return 'en';
+        else
+            return lang as Language;
+    })();
 
-    const ui = translations[language];
+    const ui = translations[language]
+
     const {squads, tagIdMap, nextId} = makeSquadsFromSquadInfo(SQUADS_INFO)
 
     return {squads, tagIdMap, ui, nextId};

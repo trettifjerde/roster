@@ -1,9 +1,11 @@
 import { memo, useContext } from "react";
-import Button from "../../ui/button";
+
+import { Language } from "../../store/translations";
+import { StateContext } from "../../store/context";
+import { SwitchLanguage } from "../../store/actions";
+
+import Button from "../ui/button";
 import styles from './header.module.scss';
-import { StateContext } from "../../../store/context";
-import { SwitchLanguage } from "../../../store/actions";
-import { Language } from "../../../store/translations";
 
 function Header() {
     const {state, dispatch} = useContext(StateContext);
