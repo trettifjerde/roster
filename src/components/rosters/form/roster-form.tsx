@@ -1,123 +1,107 @@
-import { ChangeEventHandler, memo, useContext, useEffect, useRef, useState } from 'react';
+import { ChangeEventHandler, memo, useContext, useEffect, useReducer, useRef } from 'react';
 
-import { CalculationParams, FormValues } from '../../../util/types';
-import { calcDefaultFormParams } from '../../../util/helpers';
+import { CalculationParams, HAPPINESS, HAPPY, INVALID, RANGE, RosterFormError, RosterFormFieldname, RosterFormNewValue, RosterFormState, Squad, UNHAPPY, UNWANTED } from '../../../util/types';
+import { findRosterError, initRosterForm, updateStateHappiness, validateRosterFormField } from '../../../util/helpers';
 
-import { RosterFormUI } from '../../../store/translations';
 import { StateContext } from '../../../store/context';
 
 import Button from '../../ui/button';
 
 import styles from './form.module.scss';
 
-function cleanOrGetError(ui: RosterFormUI, formValues: FormValues, key: keyof FormValues, v: string) {
-    const value = +v;
-    const info = formValues[key];
-
-    try {
-
-        if (!v || isNaN(value)) {
-            throw new TypeError(ui[key].invalid);
-        }
-
-        if (value < info.min || value > info.max) 
-            throw new RangeError(ui.rangeError(ui[key].label, info.min, info.max))
-
-        return {val: value, err: ''}
-    }
-    catch (err) {
-        if (err instanceof RangeError || err instanceof TypeError) 
-            return {val: null, err: err.message};
-        else
-            return {val: null, err: ui.unknownError};
-    }
-}
 
 function RosterForm({startCalculating}: {
     startCalculating: (p: CalculationParams) => void
 }) {
     const {squads, ui} = useContext(StateContext).state;
-    const [error, setError] = useState('');
+    const formUI = ui.rosterForm;
     const ref = useRef<HTMLFormElement>(null);
-    const [formValues, setFormValues] = useState<FormValues>(calcDefaultFormParams(squads));
-
-    useEffect(() => {setFormValues(calcDefaultFormParams(squads))}, [squads, setFormValues]);
+    const [formState, dispatch] = useReducer(reducer, squads, initRosterForm);
 
     useEffect(() => {
-        setDefault();
-    }, [formValues, ref]);
+        dispatch({type: 'reset', squads});
+    }, [squads]);
+
+    const setDefault = () => dispatch({type: 'reset', squads});
+
+    const handleChange : ChangeEventHandler<HTMLInputElement> = (e) => {
+        const { name, value } = e.target;
+        dispatch({type: 'set', field: {name: name as RosterFormFieldname, value}});
+    }
+
+    const converErrorToText = (info: RosterFormError) => {
+        
+        if (info) {
+            const {field, error} = info;
+
+            switch (error) {
+                case  INVALID:
+                    return formUI.form[field].invalid;
+
+                case RANGE:
+                    return formUI.rangeError(formUI.form[field].label, formState.form[field].min, formState.form[field].max);
+
+                default: 
+                    return formUI.unknownError;
+            } 
+        }
+
+        return ''; 
+    };
+
+    const handleCheckbox : ChangeEventHandler<HTMLInputElement> = (e) => {
+        dispatch({type: 'toggleUnwanted'});
+    }
 
     const validateForm = () => {
 
+        if (formState.error)
+            return;
+
         if (ref.current) {
 
-            const params : CalculationParams = {slots: 0, happiness: 0};
+            const params : CalculationParams = {slots: 0, happiness: 0, happy: 0, unhappy: 0, unwanted: null};
+            for (const [field, info] of Object.entries(formState.form)) {
+                switch (field) {
+                    case UNWANTED:
+                        if (formState.unwantedOff) {
+                            break;
+                        }
 
-            for (const key of Object.keys(formValues) as (keyof FormValues)[]) {
-                const {val, err} = cleanOrGetError(ui.rosterForm, formValues, key, ref.current[key].value);
-                
-                if (val) {
-                    params[key] = val;
-                }
-                else {
-                    markError(ref.current[key], err);
-                    return;
+                    default:
+                        if (info.error || typeof info.value === 'string')
+                            return;
+                        params[field as RosterFormFieldname] = info.value;
                 }
             }
-
+            console.log(params);
             startCalculating(params);
         }
     };
 
-    const setDefault = () => {
-        if (ref.current) {
-            for (const [key, value] of Object.entries(formValues)) {
-                cleanError(ref.current[key]);
-                    ref.current[key].value = value.defaultValue;
-            }
-        }
-    }
-
-    const validateValue : ChangeEventHandler<HTMLInputElement> = (e) => {
-        const key = e.target.name as keyof FormValues;
-        const v = e.target.value;
-
-        const {err} = cleanOrGetError(ui.rosterForm, formValues, key, v);
-
-        if (err) 
-            markError(e.target, err);
-        else
-            cleanError(e.target);
-    }
-
-    const cleanError = (input: HTMLInputElement) => {
-        input.classList.remove("invalid");
-        setError('');
-    }
-
-    const markError = (input: HTMLInputElement, err: string) => {
-        input.classList.add("invalid");
-        setError(err);
-    }
-
     return <form className={`form ${styles.form}`} ref={ref}
         onSubmit={(e) => e.preventDefault()}>
-        <p className="form-err">{error}</p>
+        <p className="form-err">{converErrorToText(formState.error)}</p>
         <div>
-            <div className={styles.lblcont}>
-                <label>{ui.rosterForm.slots.label}
-                    <input name="slots" step="1" min={formValues.slots.min} max={formValues.slots.max}
-                        defaultValue={formValues.slots.defaultValue} onChange={validateValue} onFocus={(e) => cleanError(e.target)} />
+            {Object.entries(formState.form).map(([name, info]) => <div key={name} className={styles.lblcont}>
+                <label>
+                    <div>
+                        {formUI.form[name as RosterFormFieldname].label}
+                        {name === UNWANTED && <input type='checkbox' 
+                            checked={!formState.unwantedOff}
+                            onChange={handleCheckbox}
+                        /> }
+                    </div>
+
+                    <input type='number' className={info.error ? 'invalid' : ''} name={name} step={name === HAPPINESS ? 0.001 : 1} 
+                        min={info.min} 
+                        max={info.max}
+                        value={info.value}
+                        disabled={name === UNWANTED && formState.unwantedOff}
+                        onChange={handleChange} />
                 </label>
-                <div className='note'>{ui.rosterForm.slots.description}</div>
-            </div>
-            <div className={styles.lblcont}>
-                <label>{ui.rosterForm.happiness.label}
-                    <input name="happiness" step="1" min={formValues.happiness.min} max={formValues.happiness.max}
-                        defaultValue={formValues.happiness.defaultValue} onChange={validateValue} onFocus={(e) => cleanError(e.target)} />
-                </label>
-                <div className='note'>{ui.rosterForm.happiness.description}</div>
-            </div>
+                <div className='note'>{formUI.form[name as RosterFormFieldname].description}</div>
+            </div>)}
         </div>
         <div className="btncont">
             <Button onClick={validateForm}>{ui.btns.formRoster}</Button>
@@ -127,3 +111,59 @@ function RosterForm({startCalculating}: {
 }
 
 export default memo(RosterForm);
+
+const reducer = (state: RosterFormState, action: FormAction) => {
+    switch (action.type) {
+        case 'reset':
+            return initRosterForm(action.squads);
+        
+        case 'set':
+            const {value, error} = validateRosterFormField(state, action.field);
+            const updForm = {...state.form};
+            updForm[action.field.name].value = value;
+            updForm[action.field.name].error = error;
+            
+            // update happiness config if it's either happy or unhappy that's being updated
+
+            if (!error) {
+                
+                switch (action.field.name) {
+                    case HAPPY:
+                        if (!state.form[UNHAPPY].error) 
+                        updForm.happiness = updateStateHappiness(state.squadsPerSide, value, +state.form[UNHAPPY].value);
+                        break;
+                        case UNHAPPY:
+                        if (!state.form[HAPPY].error) 
+                        updForm.happiness = updateStateHappiness(state.squadsPerSide, +state.form[HAPPY].value, value);
+                    break;
+                }
+            }
+
+            const currentError = error ? {field: action.field.name, error} as RosterFormError : findRosterError(updForm, state.unwantedOff);
+
+            return {
+                ...state, 
+                form: updForm,
+                error: currentError
+            };
+
+        case 'toggleUnwanted':
+
+            return {
+                ...state,
+                unwantedOff: !state.unwantedOff,
+                error: findRosterError(state.form, !state.unwantedOff)
+            }
+
+        default: 
+            return state;
+    }
+}
+
+type FormAction = {
+    type: 'set', field: RosterFormNewValue
+} | {
+    type: 'reset', squads: Squad[]
+} | {
+    type: 'toggleUnwanted'
+};

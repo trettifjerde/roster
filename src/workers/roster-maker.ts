@@ -1,4 +1,4 @@
-import { getSquadIdsFromMask, printTime } from "../util/helpers";
+import { getSquadIdsFromMask, printPerformance } from "../util/helpers";
 import { Side, Roster, RosterMakerRequest, RosterMakerResponse, RosterSlaveRequest, RosterSlaveResponse, Rotation, SideInfo } from "../util/types";
 import SlaveWorker from './roster-slave?worker';
 
@@ -64,7 +64,7 @@ function makeBatches() {
         sides = sides.slice(limit);
         sidesToHandle -= limit;  
     }
-    console.log(batches);
+    //console.log(batches);
 }
 
 function calcLimit(prevBatch: Batch, sidesToHandle: number) {
@@ -86,8 +86,9 @@ function startCombining() {
                     if (roster) {
                         self.postMessage({status: 'update', roster} as RosterMakerResponse);
                     }
-                    else 
-                        console.log(data.rotation, 'from slave', i, 'has failed slots diff test');
+                    else {
+                        //console.log(data.rotation, 'from slave', i, 'has failed slots diff test');
+                    }
                     break;
 
                 case 'done':
@@ -95,12 +96,12 @@ function startCombining() {
                         feedNewBatchTo(worker, i.toString());
                     
                     else {
-                        console.log('No more batches. Terminating slave', i);
+                        //console.log('No more batches. Terminating slave', i);
                         worker.terminate();
                         delete slaves[i];
 
                         if (Object.keys(slaves).length === 0) {
-                            printTime('RosterMaker done in', time);
+                            printPerformance('RosterMaker', performance.now() - time);
                             self.postMessage({status: 'done'} as RosterMakerResponse);
                         }
                     }
@@ -145,7 +146,9 @@ function isValidRoster(rot: Rotation) {
     const roster: Roster = {
         id: totalRosters, 
         roster: sorted.map(side => buildSide(side)),
-        totalHappiness: rot.reduce((acc, side) => acc + side.happiness, 0)
+        averageHappiness: sorted.reduce((acc, side, i) => {
+            return i === 0 ? side.happiness : ((acc * i) + side.happiness) / (i + 1)
+        }, 0)
     };
     totalRosters++;
 

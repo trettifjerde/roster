@@ -6,7 +6,7 @@ export const translations = {
             description(link: JSX.Element) {
                 return <>
                     <p>A {link} utility.</p>
-                    <p>Assigns player squads to one of two competing sides on two servers.</p>
+                    <p>Assigns player squads to one of the two competing sides on two servers.</p>
                     <p>Ensures side slots are balanced and squad preferences are taken into consideration.</p>
                 </>
             }
@@ -15,22 +15,39 @@ export const translations = {
             thisMightTake: 'This might take some time. Keep the tab open and go get some tea.',
             makingSides(n: number) {return <><p>Calculating possible sides...</p><p>Sides found: {n}</p></>},
             sidesFound(n: number) { return <><p>{n} possible sides found.</p><p>Calculating rosters...</p></>},
-            rostersFound(n: number) {return <><p>Calculating rosters...</p><p>Rosters found: {n}</p></>},
             abortText: 'Abort'
         },
         rosterForm: {
-            slots: {
-                label: 'Max. side slot difference',
-                description: 'Acceptable difference between side slots on one server',
-                invalid: 'Invalid slot difference'
+            form: {
+                slots: {
+                    label: 'Max. side slot difference',
+                    description: "Acceptable difference between side slots on one server",
+                    invalid: 'Invalid slot difference'
+                },
+                happiness: {
+                    label: 'Min. average happiness',
+                    description: "Calculated for each side: sum of each squad's happiness divided by the number of squads. Specify to exclude sides with average happiness lower than needed",
+                    invalid: 'Invalid min. average happiness'
+                },
+                happy: {
+                    label: 'Happy points',
+                    description: 'Points added to squad happiness if they are on the same side with a squad they want to play with',
+                    invalid: 'Invalid happy points'
+                },
+                unhappy: {
+                    label: 'Unhappy points',
+                    description: 'Points substracted from squad happiness if they are on the same side with a squad they do not want to play with',
+                    invalid: 'Invalid unhappy points'
+                },
+                unwanted: {
+                    label: 'Max. unwanted squads',
+                    description: 'Leave turned off or specify how many squads from their "do not want to play with" list a squad may end up playing with',
+                    invalid: 'Invalid unwanted squads'
+                }
             },
-            happiness: {
-                label: 'Min. side happiness',
-                description: 'To exclude sides with total squad happiness lower than specified',
-                invalid: 'Invalid side happiness'
-            },
-            rangeError(label: string, min: number, max: number) {return min === max ? `${label} fore these squads = ${min}` : 
+            rangeError(label: string, min: number, max: number) {return min === max ? `${label} for these squads = ${min}` : 
             `${label} for these squads: ${min} <= x <= ${max}`},
+
             unknownError: 'Unknown error'
         },
         common: {
@@ -81,7 +98,7 @@ export const translations = {
             description(link: JSX.Element) {
                 return <>
                     <p>Утилита для {link}.</p>
-                    <p>Распределяет отряды по сторонам двух серверов.</p>
+                    <p>Распределяет игровые отряды по сторонам двух серверов.</p>
                     <p>Учитывает предпочтения отрядов и следит за тем, чтобы баланс сторон был соблюден</p>
                 </>
             }
@@ -90,22 +107,39 @@ export const translations = {
             thisMightTake: 'Это займет некоторое время. Оставьте вкладку открытой и занимайтесь своими делами.',
             makingSides(n: number) {return <><p>Составляем стороны по введенным условиям...</p><p>Найдено сторон: {n}</p></>},
             sidesFound(n: number) {return <><p>Найдено {n} сторон с указанным уровнем счастья.</p><p>Составляем ротации...</p></>},
-            rostersFound(n: number) {return <><p>Составляем ротации...</p><p>Найдено ротаций: {n}</p></>},
             abortText: 'Прервать'
         },
         rosterForm: {
-            slots: {
-                label: 'Макс. разница слотов',
-                description: 'Допустимая разница в слотах между сторонами на одном сервере',
-                invalid: 'Недопустимое значение разницы слотов'
-            },
-            happiness: {
-                label: 'Мин. счастье стороны',
-                description: 'Чтобы исключить стороны, где суммарный уровень счастья отрядов ниже указанного',
-                invalid: 'Недопустимое значение мин. счастья',
+            form: {
+                slots : {
+                    label: 'Макс. разница слотов',
+                    description: 'Допустимая разница в слотах между сторонами на одном сервере',
+                    invalid: 'Недопустимое значение разницы слотов'
+                },
+                happiness: {
+                    label: 'Мин. среднее счастье отрядов',
+                    description: 'Сумма счастья отрядов, деленная на их количество. Укажите, чтобы исключить стороны, где средний уровень счастья отрядов ниже необходимого',
+                    invalid: 'Недопустимое значение мин. счастья',
+                },
+                happy: {
+                    label: 'Очки счастья',
+                    description: 'Сколько очков добавлять к счастью отряда, если он играет на одной стороне с отрядом, с которым хочет',
+                    invalid: 'Недопустимое значение очков счастья'
+                },
+                unhappy: {
+                    label: 'Очки недовольства',
+                    description: 'Сколько очков вычитать из счастья отряда, если он играет на одной стороны с отрядом, с которым не хочет играть',
+                    invalid: 'Недопустимое значение очков недовольства'
+                },
+                unwanted: {
+                    label: 'Макс. нежелательных отрядов',
+                    description: 'Оставьте отключенным или укажите, с каким количеством отрядов из списка нежелательных отряд может играть на одной стороне',
+                    invalid: 'Недопустимое значение нежелательных отрядов'
+                }
             },
             rangeError(label: string, min: number, max: number) {return min === max ? `${label} для этих отрядов = ${min}` : 
             `${label} для этих отрядов: ${min} <= x <= ${max}`},
+
             unknownError: 'Неизвестная ошибка'
         },
         common: {

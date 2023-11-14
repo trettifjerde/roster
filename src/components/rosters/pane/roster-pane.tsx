@@ -1,7 +1,7 @@
 import { ReactNode, memo, useCallback, useContext, useState } from "react";
 
 import { CalculationParams, Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
-import { sortRosters } from "../../../util/helpers";
+import { HAPPY_POINT, UNHAPPY_POINT, sortRosters } from "../../../util/helpers";
 
 import RosterMaker from '../../../workers/roster-maker?worker';
 import SidesMaker from '../../../workers/sides-maker?worker';
@@ -25,10 +25,12 @@ export default function RosterPane() {
 
     const [status, setStatus] = useState<JSX.Element | null>(null);
     const [rosters, setRosters] = useState<Roster[]>([]);
+    const [points, setPoints] = useState({happy: HAPPY_POINT, unhappy: UNHAPPY_POINT});
     const [isNotFound, setIsNotFound] = useState(false); 
 
-    const startCalculating = useCallback(({slots, happiness} : CalculationParams) => {
+    const startCalculating = useCallback(({slots, happiness, happy, unhappy, unwanted} : CalculationParams) => {
         setRosters([]);
+        setPoints({happy, unhappy});
         setIsNotFound(false);
 
         const allSquads = squads.reduce((acc, squad) => acc + BigInt(squad.id), BigInt(0));
@@ -55,7 +57,6 @@ export default function RosterPane() {
                     break;
                 case 'update':
                     setRosters(prev => sortRosters(prev, data.roster));
-                    setStatus(ui.calculations.rostersFound(data.roster.id + 1));
                     break;
                 case 'done':
                     setStatus(null);
@@ -75,9 +76,13 @@ export default function RosterPane() {
 
         sidesMaker.postMessage({
             command: 'init',
-            squads, 
-            sideHappy: happiness,
-            slotsDiff: slots
+            info: {
+                squads, 
+                minHappiness: happiness,
+                slotsDiff: slots,
+                points: {happy, unhappy},
+                unwanted
+            }
         } as SidesMakerRequest);        
         
     }, [squads, rosterMaker, sidesMaker, ui]);
@@ -94,7 +99,7 @@ export default function RosterPane() {
 
     return <div>
         <RosterForm startCalculating={startCalculating} />
-        <RosterGrid header={ui.common.rosters} rosters={rosters} empty={isNotFound ? ui.rosters.notFound : ui.rosters.empty} />
+        <RosterGrid header={ui.common.rosters} rosters={rosters} points={points} empty={isNotFound ? ui.rosters.notFound : ui.rosters.empty} />
         {status && <StatusModal abort={abortCalculating}>{status}</StatusModal>}
     </div>
 }

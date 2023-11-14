@@ -2,7 +2,7 @@ import { Ref, forwardRef, memo, useCallback, useMemo, useState } from "react";
 import {AnimatePresence, motion} from 'framer-motion';
 import { Squad, IdTagMap } from "../../../util/types";
 import SquadForm from "../form/squad-form";
-import Spoiler from "../../ui/spoiler";
+import MotionsSpoiler from "../../ui/motion-spoiler";
 import Button from "../../ui/button";
 import { translations } from "../../../store/translations";
 import styles from './squad.module.scss';
@@ -37,7 +37,7 @@ const SquadItem = memo(
     const printWiths = useMemo(() => printPreferences('with'), [printPreferences]); 
     const printWithouts = useMemo(() => printPreferences('without'), [printPreferences]);
     
-    return <Spoiler coloredBg header={getHeader} forceCollapse={forceCollapse}>
+    return <MotionsSpoiler coloredBg header={getHeader} forceCollapse={forceCollapse}>
         <AnimatePresence mode="wait">
             {!editMode && <motion.div className={styles.info} 
                 initial={{opacity: 0, y: -100}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: 100}}>
@@ -50,7 +50,7 @@ const SquadItem = memo(
 
             {editMode &&<SquadForm squad={squad} toggleForm={toggleMode}/>}
         </AnimatePresence>
-    </Spoiler>
+    </MotionsSpoiler>
 }));
 
 export default SquadItem;

@@ -1,4 +1,4 @@
-import { printTime } from "../util/helpers";
+import { printPerformance } from "../util/helpers";
 import { Side, RosterSlaveRequest, RosterSlaveResponse, Rotation, } from "../util/types";
 
 let slaveName: string;
@@ -18,9 +18,9 @@ self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
             slotsDiff = data.slotsDiff;
             time = performance.now();
 
-            console.log(`Slave ${slaveName} receives a new batch: {sides: ${sides.length}, limit: ${limit}}`);
+            //console.log(`Slave ${slaveName} receives a new batch: {sides: ${sides.length}, limit: ${limit}}`);
             startCombining();
-            printTime(`Slave ${slaveName} done in`, time);
+            //printPerformance(`Slave ${slaveName}`, performance.now() - time);
 
             self.postMessage({status: 'done'} as RosterSlaveResponse);
             break;

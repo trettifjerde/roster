@@ -1,20 +1,23 @@
-import { getSquadIdsFromMask } from "../util/helpers";
-import { Squad, SidesMakerRequest, Side, SquadsMap, SideMakerMemo, SidesMakerResponse } from "../util/types";
+import { getMutualHappiness, getSquadIdsFromMask, printPerformance } from "../util/helpers";
+import { Squad, SidesMakerRequest, Side, SquadsMap, SideMakerMemo, SidesMakerResponse, SidesMakerInitInfo } from "../util/types";
 
 class SidesMaker {
     memo: SideMakerMemo;
     sortedIds: number[];
     squadsMap: SquadsMap;
+    slotsDiff: number;
+    minHappiness: number;
+    points: {happy: number, unhappy: number};
+    maxUnwanted: number;
     maxSlotsPerSide: number;
     minSlotsPerSide: number;
     smallestSquadSize: number;
-    intermediateHappiness: number;
     intermediateHappinessCheckAtSlots: number;
+    unwantedCheckPassed: (squadIds: number[]) => boolean;
 
-    constructor(squads: Squad[], public slotsDiff: number, public sideHappiness: number) {
-        this.memo = {};
+    constructor(info: SidesMakerInitInfo) {
 
-        const sortedSquads = [...squads].sort((a, b) => b.slots - a.slots);
+        const sortedSquads = [...info.squads].sort((a, b) => b.slots - a.slots);
         const squadsMap : SquadsMap = new Map();
         const sortedIds : number[] = [];
         let totalSlots = 0;
@@ -30,17 +33,31 @@ class SidesMaker {
         }
         
         const slotsPerSide = totalSlots / 4;
-        const squadsPerSide = slotsPerSide / (totalSlots / squads.length)
+        const squadsPerSide = slotsPerSide / (totalSlots / sortedSquads.length)
         const isLargestSquadOverQuarter = largestSquadSize > slotsPerSide;
+
+        this.memo = {};
         this.sortedIds = sortedIds;
         this.squadsMap = squadsMap;
-        this.maxSlotsPerSide = isLargestSquadOverQuarter ? largestSquadSize : Math.ceil(slotsPerSide + slotsDiff);
+        this.minHappiness = info.minHappiness;
+        this.slotsDiff = info.slotsDiff;
+        this.maxSlotsPerSide = isLargestSquadOverQuarter ? largestSquadSize : Math.ceil(slotsPerSide + this.slotsDiff);
         this.minSlotsPerSide = squadsPerSide === 1 ? smallestSquadSize :
-            isLargestSquadOverQuarter ? Math.ceil(((totalSlots - largestSquadSize * 2) - slotsDiff) / 2) : 
-            Math.floor(slotsPerSide - slotsDiff);
+            isLargestSquadOverQuarter ? Math.ceil(((totalSlots - largestSquadSize * 2) - this.slotsDiff) / 2) : 
+            Math.floor(slotsPerSide - this.slotsDiff);
         this.smallestSquadSize = smallestSquadSize;
-        this.intermediateHappiness = this.sideHappiness - Math.floor((squads.length / 8) *  (squads.length / 16) * 2);
         this.intermediateHappinessCheckAtSlots = Math.floor(this.maxSlotsPerSide * 0.7);
+        this.points = info.points;
+
+        if (info.unwanted === null) {
+
+            this.unwantedCheckPassed = (a: any) => true;
+            this.maxUnwanted = 0;
+        }
+        else {
+            this.maxUnwanted = info.unwanted;
+            this.unwantedCheckPassed = this.checkUnwanted;
+        }
     }
 
     start() {
@@ -49,7 +66,7 @@ class SidesMaker {
     }
 
     printConfig() {
-        const str = `maxSlots: ${this.maxSlotsPerSide}, minSlots: ${this.minSlotsPerSide}, intermediateHappiness: ${this.intermediateHappiness}, intermediateCheck: ${this.intermediateHappinessCheckAtSlots}`
+        const str = `maxSlots: ${this.maxSlotsPerSide}, minSlots: ${this.minSlotsPerSide}, intermediateCheck: ${this.intermediateHappinessCheckAtSlots}`
         console.log(str);
     }
 
@@ -89,7 +106,7 @@ class SidesMaker {
         
         for (const side of withoutSquad) {
     
-            if (this.canBeUpdated(side.slots, index)) {
+            if (this.nextSquadSlots(side.slots, index)) {
                 sides.push(side); 
             }
         }
@@ -101,6 +118,38 @@ class SidesMaker {
 
     getCurrentSquad(index: number) {
         return this.squadsMap.get(this.sortedIds[index]);
+    }
+
+    checkUnwanted(squadIds: number[]) {
+        if (squadIds.length < 2) 
+            return true;
+
+        const unwantedCount = squadIds.reduce((acc, id) => {
+            acc[id] = 0;
+            return acc;
+        }, {} as {[key: number]: number});
+        
+        for (let i = 0; i < squadIds.length - 1; i++) {
+            const id1 = squadIds[i];
+            const squad1 = this.squadsMap.get(id1)!;
+
+            for (let j = i + 1; j < squadIds.length; j++) {
+                const id2 = squadIds[j];
+
+                const ids = [id1, id2];
+                
+                const mutualHappiness = getMutualHappiness(squad1, this.squadsMap.get(id2)!, this.points);
+
+                for (let I = 0; I < ids.length; I++) {
+                    if (mutualHappiness[I] < 0) {
+                        unwantedCount[ids[I]] += 1;
+                        if (unwantedCount[ids[I]] > this.maxUnwanted)
+                            return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     getNextSquadSlots(index: number) {
@@ -119,25 +168,17 @@ class SidesMaker {
         return `${index}-${slotsLeft}`;
     }
     
-    canBeUpdated(slots: number, index: number) {
+    nextSquadSlots(slots: number, index: number) {
         const nextSquad = this.squadsMap.get(this.sortedIds[index + 1]);
         
-        if (nextSquad) 
-            return (slots + nextSquad.slots) <= this.maxSlotsPerSide;
+        if (nextSquad && ((slots + nextSquad.slots) <= this.maxSlotsPerSide)) 
+            return nextSquad.slots;
 
-        return false;
+        return 0;
     }
     
     areSlotsReady(slots: number) {
         return slots >= this.minSlotsPerSide;
-    }
-
-    isTimeForHappinessCheck(side: Side) {
-        return side.slots >= this.intermediateHappinessCheckAtSlots;
-    }
-
-    intermediateHappinessCheckFailed(side: Side) {
-        return side.happiness < this.intermediateHappiness;
     }
     
     addSquadToSide(index: number, squad: Squad, side: Side) {
@@ -147,37 +188,67 @@ class SidesMaker {
         updSide.squads |= BigInt(squad.id);
 
         const areSlotsReady = this.areSlotsReady(updSide.slots);
-        const canBeUpdated = this.canBeUpdated(updSide.slots, index);
+        const nextSquadSlots = this.nextSquadSlots(updSide.slots, index);
 
-        if (areSlotsReady || canBeUpdated) {
+        if (!areSlotsReady && !nextSquadSlots) 
+            return null;
 
-            const squadIds = getSquadIdsFromMask(side.squads);
+        const {happiness, squadIds} = this.updateSideHappinessWithSquad(side, squad);
+        updSide.happiness = happiness;
+
+        if (areSlotsReady && updSide.happiness >= this.minHappiness && this.unwantedCheckPassed(squadIds))
+            this.announceReadySide(updSide);
         
-            for (const otherSquadId of squadIds) {
-                const otherSquad = this.squadsMap.get(otherSquadId)!;
-
-                if (squad.with.has(otherSquadId))
-                    updSide.happiness += 1;
-                if (otherSquad.with.has(squad.id))
-                    updSide.happiness += 1;
-                if (squad.without.has(otherSquadId))
-                    updSide.happiness -= 2;
-                if (otherSquad.without.has(squad.id))
-                    updSide.happiness -= 2;
+        if (nextSquadSlots) {       
+            if (this.isTimeForHappinessCheck(updSide) && this.intermediateHappinessCheckFailed(happiness, squadIds.length, updSide.slots, nextSquadSlots)) {    
+                return null;
             }
 
-            if (areSlotsReady && updSide.happiness >= this.sideHappiness) 
-                this.announceReadySide(updSide);
-            
-            if (canBeUpdated) {       
-                if (this.isTimeForHappinessCheck(updSide) && this.intermediateHappinessCheckFailed(updSide))    
-                    return null;
-
-                return updSide as Side;
-            }
+            return updSide as Side;
         }
-        
-        return null;  
+
+        return null;
+    }
+    isTimeForHappinessCheck(side: Side) {
+        return side.slots >= this.intermediateHappinessCheckAtSlots;
+    }
+
+    intermediateHappinessCheckFailed(currentHappiness: number, currentSquads: number, currentSlots: number, nextSquadSlots: number) {
+        const maxFutureSquads = Math.floor((this.maxSlotsPerSide - currentSlots) / nextSquadSlots);
+
+        const oldHappiness = currentHappiness * currentSquads;
+        const oldNewMutualHappiness = currentSquads * maxFutureSquads * this.points.happy * 2;
+        const newSquadsHappiness = maxFutureSquads * (maxFutureSquads - 1) * this.points.happy;
+
+        const maxFutureHappiness = (oldHappiness + oldNewMutualHappiness + newSquadsHappiness) / (currentSquads + maxFutureSquads);
+        return maxFutureHappiness < this.minHappiness;
+    }
+
+    updateSideHappinessWithSquad(side: Side, squad: Squad) {
+        const squadIds = getSquadIdsFromMask(side.squads);
+
+        if (squadIds.length === 0) 
+            return {
+                happiness: 0,
+                squadIds: [squad.id]
+        };
+
+        let newSquadHappiness = 0;
+        let oldSquadsHappinessAdjust = 0;
+    
+        for (const oldSquadId of squadIds) {
+            const oldSquad = this.squadsMap.get(oldSquadId)!;
+
+            const [squadHappy, oldSquadHappy] = getMutualHappiness(squad, oldSquad, this.points);
+
+            newSquadHappiness += squadHappy;
+            oldSquadsHappinessAdjust += oldSquadHappy;
+        }
+
+        return {
+            happiness: ((side.happiness * squadIds.length) + oldSquadsHappinessAdjust + newSquadHappiness) / (squadIds.length + 1),
+            squadIds: [...squadIds, squad.id]
+        };
     }
 
     announceReadySide(side: Side) {
@@ -192,10 +263,9 @@ self.onmessage = (e: {data: SidesMakerRequest}) => {
         case 'init':
             console.log('SidesMaker received a start command');
             const time = performance.now();
-            const maker = new SidesMaker(data.squads, data.slotsDiff, data.sideHappy);
+            const maker = new SidesMaker(data.info);
             maker.start();
-            console.log('SidesMaker: permutations complete');
-            console.log('SidesMaker done in', (performance.now() - time) / 60000);
+            printPerformance('SidesMaker', performance.now() - time);
             self.postMessage({status: 'done'} as SidesMakerResponse);
             break;
     }

@@ -3,22 +3,23 @@ import { HappinessInfo, Roster, SideInfo, Squad, IdTagMap } from '../../../util/
 import styles from './item.module.scss';
 import { StateContext } from '../../../store/context';
 import HoverNote from './hover-note';
+import { HAPPY_POINT, UNHAPPY_POINT, formatHappiness } from '../../../util/helpers';
 
-const RosterItem = memo(({roster} : {roster: Roster}) => {
+const RosterItem = memo(({roster, points} : {roster: Roster, points: {happy: number, unhappy: number}}) => {
     return <div className={styles.roster} >
-        {roster.roster.map((side, i) => <Side key={i} side={side}/>)}
+        {roster.roster.map((side, i) => <Side key={i} side={side} points={points}/>)}
     </div>
 });
 
 export default RosterItem;
 
-function Side({side}: {side: SideInfo}) {
+function Side({side, points}: {side: SideInfo, points: {happy: number, unhappy: number}}) {
     const {squads, idTagMap, ui} = useContext(StateContext).state;
     const [currentHappinessInfo, setCurrentHappinessInfo] = useState<HappinessInfo | null>(null);
     const [position, setPosition] = useState<{X: number, Y: number}>({X: 0, Y: 0});
 
     const squadsHappiness = useMemo(() => squads.reduce((acc, squad) => {
-        acc.set(squad.id, makeHappinessInfo(squad.id, side.squads, squads, idTagMap));
+        acc.set(squad.id, makeHappinessInfo(squad.id, side.squads, squads, idTagMap, points));
         return acc;
     }, new Map<number, HappinessInfo>()), [side]);
     
@@ -52,7 +53,7 @@ function Side({side}: {side: SideInfo}) {
     return <div className={styles.side}>
         <div className={styles.info}>
             <div>{ui.common.slots}: {side.slots}</div>
-            <div>{ui.common.happiness}: {side.happiness}</div>
+            <div>{ui.common.happiness}: {formatHappiness(side.happiness)}</div>
         </div>
         <div className={styles.squads}>
             {squadTags}
@@ -61,7 +62,7 @@ function Side({side}: {side: SideInfo}) {
     </div>
 }
 
-function makeHappinessInfo(id: number, side: number[], squads: Squad[], idTagMap: IdTagMap) {
+function makeHappinessInfo(id: number, side: number[], squads: Squad[], idTagMap: IdTagMap, points: {happy: number, unhappy: number}) {
     const squad = squads.find(s => s.id === id)!;
 
     const info : HappinessInfo = {tag: squad.tag, total: 0, happy: [], unhappy: []};
@@ -72,11 +73,11 @@ function makeHappinessInfo(id: number, side: number[], squads: Squad[], idTagMap
 
         if (squad.with.has(squadId)) {
             info.happy.push(idTagMap.get(squadId)!);
-            info.total += 1;
+            info.total += points.happy;
         }
         else if (squad.without.has(squadId)) {
             info.unhappy.push(idTagMap.get(squadId)!);
-            info.total -= 2;
+            info.total += points.unhappy;
         }
     }
 
