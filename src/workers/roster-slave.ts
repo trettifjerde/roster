@@ -11,6 +11,7 @@ self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
             sides = data.sides;
             allSquads = data.allSquads;
             limit = data.limit;
+            console.log(typeof sides[0].squads);
 
             startCombining();
 

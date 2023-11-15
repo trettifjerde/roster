@@ -143,6 +143,8 @@ export function useWorkerManager() {
         setRosterSlaves(slaves);
 
         time = performance.now();
+
+        console.log(typeof batches[0].sides[0].squads);
     
         for (const [name, worker] of Object.entries(slaves))
             feedNewBatchTo(worker, +name);
