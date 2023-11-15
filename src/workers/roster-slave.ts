@@ -5,6 +5,8 @@ let sides: Side[];
 let allSquads: bigint;
 let limit: number;
 
+console.log('inside roster slave');
+
 self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
     switch (data.command) {
         case 'calculate':
