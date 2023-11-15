@@ -104,7 +104,6 @@ export function useWorkerManager() {
         const slaves: {[key: number]: Worker} = {};
 
         for (let i = 0; i < Math.min(SLAVES_NUM, batches.length); i++) {
-            console.log('creating slaves');
             const worker = new RosterSlave();
     
             worker.onmessage = (e: {data: RosterSlaveResponse}) => {
