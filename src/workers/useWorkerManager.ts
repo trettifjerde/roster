@@ -13,6 +13,7 @@ type SearchStatus = 'sides-maker' | 'roster-maker' | 'idle';
 
 export function useWorkerManager() {
 
+
     const [sidesMaker, setSidesMaker] = useState(() => new SidesMaker());
     const [rosterMaker, setRosterMaker] = useState(() => new RosterMaker());
     const [rosterSlaves, setRosterSlaves] = useState<{[key: number]: Worker}>({});
@@ -103,7 +104,7 @@ export function useWorkerManager() {
         const slaves: {[key: number]: Worker} = {};
 
         for (let i = 0; i < Math.min(SLAVES_NUM, batches.length); i++) {
-            console.log('creating slave', i);
+            console.log('creating slaves');
             const worker = new RosterSlave();
     
             worker.onmessage = (e: {data: RosterSlaveResponse}) => {
