@@ -11,7 +11,6 @@ self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
             sides = data.sides;
             allSquads = data.allSquads;
             limit = data.limit;
-            console.log(typeof sides[0].squads);
 
             startCombining();
 
@@ -50,7 +49,7 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
             if (compSide.squads > remSq)
                 break;
             
-            if (((remSq & compSide.squads) === compSide.squads)) {
+            if ((remSq & compSide.squads) === compSide.squads) {
                 remInd.unshift(compIndex);
             }
         }
