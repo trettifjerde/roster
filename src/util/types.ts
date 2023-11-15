@@ -74,28 +74,27 @@ export type SidesMakerRequest = {
     info: SidesMakerInitInfo
 };
 
-export type SidesMakerResponse = {status: 'update', side: Side} | {status: 'done'};
+export type SidesMakerResponse = {status: 'side-made', side: Side} | {status: 'done'};
 
 export type RosterMakerRequest = 
     {command: 'init', allSquads: bigint, slotsDiff: number} |
-    {command: 'update', side: Side} |
-    {command: 'start'} | 
-    {command: 'terminate'};
-export type RosterMakerResponse = {status: 'starting', sidesLength: number} | 
-    {status: 'update', roster: Roster} | 
-    {status: 'announce-side', sidesLength: number} |
-    {status: 'done'} |
-    {status: 'slaves-terminated'};
+    {command: 'validate-side', side: Side} |
+    {command: 'make-batches'} |
+    {command: 'validate-roster', rotation: Side[]};
+
+export type RosterMakerResponse = {status: 'starting', totalSides: number} |
+    {status: 'side-ready', totalSides: number} |
+    {status: 'batches-ready', batches: Batch[]} |
+    {status: 'roster-ready', roster: Roster}
 
 export type RosterSlaveRequest = {
     command: 'calculate', 
-    slaveName: string,
     sides: Side[], 
-    slotsDiff: number,
     allSquads: bigint,
     limit: number
 };
-export type RosterSlaveResponse = {status: 'update', rotation: Side[]} | {status: 'done'};
+export type RosterSlaveResponse = {status: 'sides-combined', rotation: Side[]} | {status: 'done'};
 
+export type Batch = {sides: Side[], limit: number};
 
 export type HappinessInfo = {tag: string, happy: string[], unhappy: string[], total: number};

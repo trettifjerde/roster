@@ -74,7 +74,6 @@ function RosterForm({startCalculating}: {
                         params[field as RosterFormFieldname] = info.value;
                 }
             }
-            console.log(params);
             startCalculating(params);
         }
     };

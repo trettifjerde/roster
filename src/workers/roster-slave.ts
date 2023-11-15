@@ -1,12 +1,9 @@
-import { printPerformance } from "../util/helpers";
+//import { printPerformance } from "../util/helpers";
 import { Side, RosterSlaveRequest, RosterSlaveResponse, Rotation, } from "../util/types";
 
-let slaveName: string;
 let sides: Side[];
 let allSquads: bigint;
 let limit: number;
-let time: number;
-let slotsDiff: number;
 
 self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
     switch (data.command) {
@@ -14,13 +11,8 @@ self.onmessage = ({data}: {data: RosterSlaveRequest}) => {
             sides = data.sides;
             allSquads = data.allSquads;
             limit = data.limit;
-            slaveName = data.slaveName;
-            slotsDiff = data.slotsDiff;
-            time = performance.now();
 
-            //console.log(`Slave ${slaveName} receives a new batch: {sides: ${sides.length}, limit: ${limit}}`);
             startCombining();
-            //printPerformance(`Slave ${slaveName}`, performance.now() - time);
 
             self.postMessage({status: 'done'} as RosterSlaveResponse);
             break;
@@ -31,7 +23,7 @@ function startCombining() {
     combineSides(allSquads, sides.map((s, i) => i));
 }
 
-function combineSides(remainingSquads: bigint, compIndexes: number[], level=3, otherSideSlots?: number) {
+function combineSides(remainingSquads: bigint, compIndexes: number[], level=3) {
 
     if (level < 0) {
         
@@ -78,5 +70,5 @@ function combineSides(remainingSquads: bigint, compIndexes: number[], level=3, o
 }
 
 function announceRotation(rotation: Rotation) {
-    self.postMessage({status: 'update', rotation} as RosterSlaveResponse);
+    self.postMessage({status: 'sides-combined', rotation} as RosterSlaveResponse);
 }

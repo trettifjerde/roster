@@ -296,7 +296,7 @@ export function formatHappiness(happiness: number) {
 }
 
 export function printPerformance(text: string, time: number) {
-    console.log(text, 'done in', time / 60000);
+    console.log(text, 'done in', (time / 60000).toFixed(2), 'm.');
 }
 
 export function getMutualHappiness(squad1: Squad, squad2: Squad, points: {happy: number, unhappy: number}) {

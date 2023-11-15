@@ -1,11 +1,7 @@
-import { ReactNode, memo, useCallback, useContext, useState } from "react";
+import { ReactNode, memo, useCallback, useContext, useEffect, useState } from "react";
 
-import { CalculationParams, Roster, RosterMakerRequest, RosterMakerResponse, SidesMakerRequest, SidesMakerResponse } from "../../../util/types";
+import { CalculationParams, Roster } from "../../../util/types";
 import { HAPPY_POINT, UNHAPPY_POINT, sortRosters } from "../../../util/helpers";
-
-import RosterMaker from '../../../workers/roster-maker?worker';
-import SidesMaker from '../../../workers/sides-maker?worker';
-
 import { StateContext } from "../../../store/context";
 
 import RosterForm from "../form/roster-form";
@@ -15,92 +11,43 @@ import Button from "../../ui/button";
 import Spinner from "../../ui/spinner";
 
 import styles from './pane.module.scss';
-
+import { useWorkerManager } from "../../../workers/useWorkerManager";
 
 export default function RosterPane() {
-    const [sidesMaker, setSidesMaker] = useState(() => new SidesMaker());
-    const [rosterMaker, setRosterMaker] = useState(() => new RosterMaker());
 
     const {squads, ui} = useContext(StateContext).state;
+    const {totalSidesFound, newRoster, stage, startCalculating, abortCalculating} = useWorkerManager();
 
-    const [status, setStatus] = useState<JSX.Element | null>(null);
     const [rosters, setRosters] = useState<Roster[]>([]);
     const [points, setPoints] = useState({happy: HAPPY_POINT, unhappy: UNHAPPY_POINT});
     const [isNotFound, setIsNotFound] = useState(false); 
 
-    const startCalculating = useCallback(({slots, happiness, happy, unhappy, unwanted} : CalculationParams) => {
+    const startSearching = useCallback((params : CalculationParams) => {
+        const {happy, unhappy} = params;
+
         setRosters([]);
         setPoints({happy, unhappy});
         setIsNotFound(false);
+        startCalculating({squads, params});
 
-        const allSquads = squads.reduce((acc, squad) => acc + BigInt(squad.id), BigInt(0));
+    }, [squads, startCalculating]);
 
-        sidesMaker.onmessage = ({data} : {data: SidesMakerResponse}) => {
-            switch (data.status) {
-                case 'update':
-                    rosterMaker.postMessage({command: 'update', side: data.side} as RosterMakerRequest);
-                    break;
-                case 'done':
-                    rosterMaker.postMessage({command: 'start'} as RosterMakerRequest);
-                    break;
-            }
-        };
-
-        rosterMaker.onmessage = ({data}: {data: RosterMakerResponse}) => {
-            
-            switch (data.status) {
-                case 'starting':
-                    setStatus(ui.calculations.sidesFound(data.sidesLength));
-                    break;
-                case 'announce-side':
-                    setStatus(ui.calculations.makingSides(data.sidesLength))
-                    break;
-                case 'update':
-                    setRosters(prev => sortRosters(prev, data.roster));
-                    break;
-                case 'done':
-                    setStatus(null);
-                    setIsNotFound(true);
-                    break;
-                case 'slaves-terminated':
-                    rosterMaker.terminate();
-                    setStatus(null);
-                    resetWorkers();
-                    break;
-            }
-        };
-
-        setStatus(ui.calculations.makingSides(0));
-        
-        rosterMaker.postMessage({command: 'init', allSquads, slotsDiff: slots} as RosterMakerRequest);
-
-        sidesMaker.postMessage({
-            command: 'init',
-            info: {
-                squads, 
-                minHappiness: happiness,
-                slotsDiff: slots,
-                points: {happy, unhappy},
-                unwanted
-            }
-        } as SidesMakerRequest);        
-        
-    }, [squads, rosterMaker, sidesMaker, ui]);
-
-    const abortCalculating = useCallback(() => {
-        sidesMaker.terminate();
-        rosterMaker.postMessage({command: 'terminate'} as RosterMakerRequest);
-    }, [sidesMaker, rosterMaker]);
-
-    const resetWorkers = useCallback(() => {
-        setSidesMaker(new SidesMaker());
-        setRosterMaker(new RosterMaker());
-    }, [])
+    useEffect(() => {
+        if (newRoster) {
+            setRosters(prev => sortRosters(prev, newRoster));
+        }
+    }, [newRoster]);
 
     return <div>
-        <RosterForm startCalculating={startCalculating} />
-        <RosterGrid header={ui.common.rosters} rosters={rosters} points={points} empty={isNotFound ? ui.rosters.notFound : ui.rosters.empty} />
-        {status && <StatusModal abort={abortCalculating}>{status}</StatusModal>}
+        <RosterForm startCalculating={startSearching} />
+        <RosterGrid header={ui.common.rosters} 
+            rosters={rosters} points={points} 
+            empty={isNotFound ? ui.rosters.notFound : ui.rosters.empty} />
+
+        {stage !== 'idle' && <StatusModal abort={abortCalculating}>
+            {stage === 'sides-maker' && ui.calculations.makingSides(totalSidesFound)}
+            {stage === 'roster-maker' && ui.calculations.sidesFound(totalSidesFound)}
+        </StatusModal>}
     </div>
 }
 

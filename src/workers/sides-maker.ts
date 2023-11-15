@@ -1,4 +1,4 @@
-import { getMutualHappiness, getSquadIdsFromMask, printPerformance } from "../util/helpers";
+import { getMutualHappiness, getSquadIdsFromMask } from "../util/helpers";
 import { Squad, SidesMakerRequest, Side, SquadsMap, SideMakerMemo, SidesMakerResponse, SidesMakerInitInfo } from "../util/types";
 
 class SidesMaker {
@@ -252,7 +252,7 @@ class SidesMaker {
     }
 
     announceReadySide(side: Side) {
-        self.postMessage({status: 'update', side} as SidesMakerResponse);
+        self.postMessage({status: 'side-made', side} as SidesMakerResponse);
     }
 };
 
@@ -262,10 +262,8 @@ self.onmessage = (e: {data: SidesMakerRequest}) => {
     switch (data.command) {
         case 'init':
             console.log('SidesMaker received a start command');
-            const time = performance.now();
             const maker = new SidesMaker(data.info);
             maker.start();
-            printPerformance('SidesMaker', performance.now() - time);
             self.postMessage({status: 'done'} as SidesMakerResponse);
             break;
     }
